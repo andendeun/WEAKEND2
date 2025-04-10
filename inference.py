@@ -22,7 +22,7 @@ def load_model(model_name, label_level):
 
     # 레이블 수 추출을 위해 임시 데이터셋 로드
     dummy_dataset = EmotionDataset(
-        csv_path="D:/workspace/Project_test/data/sample1.csv",
+        csv_path="logs/emotion_log.csv",
         levels=[label_level],
         model_name=model_name,
         tokenizer=tokenizer
@@ -33,7 +33,7 @@ def load_model(model_name, label_level):
 
     # 모델 생성 및 체크포인트 로딩
     model = EmotionClassifier(base_model, hidden_size=768, num_labels=num_labels)
-    checkpoint_path = f"./checkpoints/{model_name}_{label_level}/model.pt"
+    checkpoint_path = f"checkpoints/{model_name}_{label_level}/model.pt"
     model.load_state_dict(torch.load(checkpoint_path, map_location=device))
     model.to(device)
     model.eval()
