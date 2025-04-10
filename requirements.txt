@@ -2,4 +2,22 @@ streamlit
 speechrecognition
 openai
 python-dotenv
-sqlalchemy
+pandas
+requests
+SQLAlchemy
+reportlab
+openpyxl
+matplotlib
+Pillow
+seaborn
+fpdf
+
+
+
+# PyTorch (CPU 전용, Python 3.12 호환)
+torch==2.2.2+cpu
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+
+# Hugging Face 모델
+transformers==4.37.2

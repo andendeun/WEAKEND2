@@ -1,35 +1,48 @@
+import os
+import requests
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer
 
+# ✅ Google Drive에서 sample1.xlsx 다운로드
+XLSX_FILE_ID = "1_o7DRLRewzZfnRjKCexu-KNLfTFK8_gX"
+xlsx_path = "data/sample1.xlsx"
+
+def download_xlsx_from_drive(file_id, destination_path):
+    if not os.path.exists(destination_path):
+        print(f"📥 sample1.xlsx 다운로드 중: {destination_path}")
+        os.makedirs(os.path.dirname(destination_path), exist_ok=True)
+        url = f"https://drive.google.com/uc?export=download&id={file_id}"
+        response = requests.get(url, stream=True)
+        with open(destination_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=32768):
+                if chunk:
+                    f.write(chunk)
+        print("✅ 다운로드 완료")
+    else:
+        print("✅ sample1.xlsx 이미 존재")
+
+# ✅ 다운로드 실행
+download_xlsx_from_drive(XLSX_FILE_ID, xlsx_path)
+
 class EmotionDataset(Dataset):
-    def __init__(self, csv_path, tokenizer=None, levels=["대분류", "중분류", "소분류"], max_length=128, model_name="kcbert"):
+    def __init__(self, file_path, tokenizer=None, levels=["대분류", "중분류", "소분류"], max_length=128, model_name="kcbert"):
         """
-        csv_path: CSV 파일 경로 (문자열) 또는 CSV 파일 경로들의 리스트.
+        file_path: .xlsx 파일 경로 (문자열) 또는 .xlsx 경로 리스트
         tokenizer: 사전 로딩된 토크나이저 객체. 없으면 model_name에 따라 내부 로드.
         levels: 자동 매핑할 열들 (예: ["대분류", "중분류", "소분류"])
-        max_length: 토큰 최대 길이.
+        max_length: 토큰 최대 길이
         model_name: 모델명 (예: "kcbert", "koelectra", "klue")
         """
-        print("📂 CSV 로딩 시작...")
-        # csv_path가 리스트인지 여부 확인 후 데이터프레임 결합
-        if isinstance(csv_path, list):
-            dfs = []
-            for path in csv_path:
-                try:
-                    df_temp = pd.read_csv(path, encoding='utf-8')
-                except UnicodeDecodeError:
-                    df_temp = pd.read_csv(path, encoding='cp949')
-                dfs.append(df_temp)
+        print("📂 XLSX 로딩 시작...")
+        if isinstance(file_path, list):
+            dfs = [pd.read_excel(path, engine='openpyxl') for path in file_path]
             self.df = pd.concat(dfs, ignore_index=True)
-        elif isinstance(csv_path, str):
-            try:
-                self.df = pd.read_csv(csv_path, encoding='utf-8')
-            except UnicodeDecodeError:
-                self.df = pd.read_csv(csv_path, encoding='cp949')
+        elif isinstance(file_path, str):
+            self.df = pd.read_excel(file_path, engine='openpyxl')
         else:
-            raise ValueError("csv_path는 문자열 또는 문자열 리스트여야 합니다.")
+            raise ValueError("file_path는 문자열 또는 문자열 리스트여야 합니다.")
 
         self.df = self.df.dropna(subset=["문장"])
         self.levels = levels
@@ -48,7 +61,6 @@ class EmotionDataset(Dataset):
 
         self.texts = self.df["문장"].tolist()
 
-        # ✅ 토크나이저 설정 (외부에서 전달받지 않았다면 내부에서 AutoTokenizer 사용)
         if tokenizer is not None:
             self.tokenizer = tokenizer
             print("✅ 외부에서 전달받은 토크나이저 사용")
@@ -91,10 +103,8 @@ class EmotionDataset(Dataset):
 # ✅ 테스트 코드 (단독 실행 시)
 if __name__ == "__main__":
     print("🧪 EmotionDataset 단독 테스트 실행 중...\n")
-    csv_files = ["D:/workspace/Project_test/data/sample1.csv"]  # 테스트 경로
-
     dataset = EmotionDataset(
-        csv_path=csv_files,
+        file_path=xlsx_path,
         levels=["대분류", "중분류", "소분류"],
         model_name="kcbert"
     )

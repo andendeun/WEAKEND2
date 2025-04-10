@@ -3,18 +3,35 @@ import pandas as pd
 from datetime import datetime
 from openai import OpenAI
 from dotenv import load_dotenv
+import requests
 load_dotenv()
 
-# ✅ 환경변수 불러오기
-load_dotenv()
+# ✅ 환경변수로 OpenAI API 키 불러오기
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# 🔧 파일 경로 설정
-LOG_PATH = "D:/workspace/Project/logs/emotion_log.csv"
-FEEDBACK_PATH = "D:/workspace/Project/logs/gpt_feedback_log.csv"
+# ✅ Google Drive 파일 ID
+LOG_FILE_ID = "1num0DWWm10m0_AB468pJubvk3oi0i_xK"
+log_path = "logs/emotion_log.csv"
+feedback_path = "logs/gpt_feedback_log.csv"
 
-# ✅ 프롬프트 생성 함수
+def download_csv_from_drive(file_id, destination_path):
+    if not os.path.exists(destination_path):
+        print(f"📥 {destination_path} 다운로드 중...")
+        os.makedirs(os.path.dirname(destination_path), exist_ok=True)
+        url = f"https://drive.google.com/uc?export=download&id={file_id}"
+        response = requests.get(url, stream=True)
+        with open(destination_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=32768):
+                if chunk:
+                    f.write(chunk)
+        print("✅ 다운로드 완료")
+    else:
+        print(f"✅ {destination_path} 이미 존재")
 
+# ✅ 다운로드 실행
+download_csv_from_drive(LOG_FILE_ID, log_path)
+
+# ✅ GPT 프롬프트 생성 함수
 def create_prompt(row):
     return f"""
 [1] 세 모델(KCBERT, KOELECTRA, KLUE)의 감정 분석 결과를 검토하고 보완해줘.
@@ -81,9 +98,9 @@ def split_feedback(response_text):
         user_note = response_text.strip()
     return admin_note, user_note
 
-# ✅ 전체 실행 함수
+# ✅ 전체 실행용
 def run_gpt_feedback():
-    df = pd.read_csv(LOG_PATH)
+    df = pd.read_csv(log_path)
     latest = df.tail(1).iloc[0]
 
     prompt = create_prompt(latest)
@@ -101,16 +118,23 @@ def run_gpt_feedback():
         "user_feedback": user_note
     }
 
-    if os.path.exists(FEEDBACK_PATH):
-        pd.DataFrame([feedback_entry]).to_csv(FEEDBACK_PATH, mode='a', index=False, header=False)
+    if os.path.exists(feedback_path):
+        pd.DataFrame([feedback_entry]).to_csv(feedback_path, mode='a', index=False, header=False)
     else:
-        pd.DataFrame([feedback_entry]).to_csv(FEEDBACK_PATH, index=False)
+        pd.DataFrame([feedback_entry]).to_csv(feedback_path, index=False)
 
     print("\n✅ GPT 감정 피드백 저장 완료!")
     print("\n📘 [User 전용 피드백]\n")
     print(user_note)
     print("\n🔐 [Admin 참고용 분석]\n")
     print(admin_note)
+
+# ✅ Streamlit 앱에서 사용할 함수
+def get_gpt_feedback(row: dict) -> str:
+    prompt = create_prompt(row)
+    response = generate_feedback(prompt)
+    _, user_note = split_feedback(response)
+    return user_note
 
 if __name__ == "__main__":
     run_gpt_feedback()

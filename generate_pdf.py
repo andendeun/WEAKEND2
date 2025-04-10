@@ -4,16 +4,38 @@ from datetime import datetime
 from fpdf import FPDF
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
+import requests
 
-# 📁 경로 설정
-FEEDBACK_PATH = "D:/workspace/Project/logs/gpt_feedback_log_cleaned.csv"
-PDF_SAVE_DIR = "D:/workspace/Project/reports"
-FONT_PATH = "D:/workspace/Project/fonts/NotoSansKR-Regular.ttf"
-CHART_IMG_PATH = "D:/workspace/Project/temp/emotion_chart.png"
+# 📁 Google Drive 기반 경로 설정
+FONT_FILE_ID = "1zR1CubH3E3sEquwJ4qt9yDvTJf-w_79m"  # NotoSansKR-Regular.ttf
+FONT_PATH = "fonts/NotoSansKR-Regular.ttf"
+FEEDBACK_PATH = "logs/gpt_feedback_log_cleaned.csv"
+PDF_SAVE_DIR = "reports"
+CHART_IMG_PATH = "temp/emotion_chart.png"
 
-# 🔧 폰트 등록 (matplotlib + fpdf)
-font_manager.fontManager.addfont(FONT_PATH)
-plt.rcParams['font.family'] = 'Noto Sans KR'
+# ✅ Google Drive 폰트 다운로드 함수
+def download_font():
+    if not os.path.exists(FONT_PATH):
+        print("📥 사용자 폰트 다운로드 중...")
+        os.makedirs(os.path.dirname(FONT_PATH), exist_ok=True)
+        url = f"https://drive.google.com/uc?export=download&id={FONT_FILE_ID}"
+        response = requests.get(url, stream=True)
+        with open(FONT_PATH, "wb") as f:
+            for chunk in response.iter_content(chunk_size=32768):
+                if chunk:
+                    f.write(chunk)
+        print("✅ 폰트 다운로드 완료")
+    else:
+        print("✅ 사용자 폰트 이미 존재")
+
+# 🔧 폰트 등록
+def setup_font():
+    if os.path.exists(FONT_PATH):
+        font_manager.fontManager.addfont(FONT_PATH)
+        plt.rcParams['font.family'] = font_manager.FontProperties(fname=FONT_PATH).get_name()
+        print("✅ matplotlib에 폰트 적용 완료")
+    else:
+        print("⚠️ 폰트 없음 - 기본 폰트 사용")
 
 # 📊 차트 생성 함수
 def generate_emotion_chart():
@@ -26,6 +48,7 @@ def generate_emotion_chart():
     plt.xlabel("문장")
     plt.ylabel("횟수")
     plt.tight_layout()
+    os.makedirs(os.path.dirname(CHART_IMG_PATH), exist_ok=True)
     plt.savefig(CHART_IMG_PATH)
     plt.close()
 
@@ -51,7 +74,11 @@ class PDF(FPDF):
         self.chapter_body(content)
 
 # ✅ PDF 생성 실행 함수
+
 def generate_pdf():
+    download_font()
+    setup_font()
+
     os.makedirs(PDF_SAVE_DIR, exist_ok=True)
     df = pd.read_csv(FEEDBACK_PATH, quotechar='"')
     latest = df.tail(1).iloc[0]
@@ -59,7 +86,6 @@ def generate_pdf():
     input_text = latest['input_text']
     full_feedback = latest['gpt_feedback']
 
-    # 🔍 피드백 내용 분리
     if "[2]" in full_feedback:
         split_parts = full_feedback.split("[2]", 1)
         admin_review = split_parts[0].strip()
@@ -71,7 +97,6 @@ def generate_pdf():
     timestamp = latest['timestamp'].replace(":", "-")
     filename_base = f"report_{timestamp}"
 
-    # 📊 감정 흐름 차트 저장
     generate_emotion_chart()
 
     for target in ["user", "admin"]:

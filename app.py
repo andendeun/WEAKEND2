@@ -6,11 +6,11 @@ from auth import register, login
 from chatbot import generate_response
 from db import save_message
 
-from inference import predict_emotion_from_text
+from inference import predict
 from log_emotions import log_emotion
 from gpt_feedback import get_gpt_feedback
 from analyze_flow import generate_emotion_plot
-from generate_pdf import make_pdf_report
+from generate_pdf import generate_pdf
 
 # --- 앱 초기 설정 ---
 st.set_page_config(page_title="☀️WEAKEND☀️", layout="centered")
