@@ -1,7 +1,6 @@
 import os
 import tempfile
 
-import streamlit as st
 import speech_recognition as sr
 import re
 
@@ -16,6 +15,7 @@ from log_emotion import log_emotion
 from reports.generate_report import generate_html_report
 from reports.emotion_trend_plot import plot_emotion_trend
 
+import streamlit as st
 
 # ▶ 페이지 설정
 st.set_page_config(page_title="WEAKEND 감정 챗봇", layout="centered")
