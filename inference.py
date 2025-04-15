@@ -1,15 +1,25 @@
 from utils.load_model_from_drive import load_model_and_tokenizer_from_drive
-from backend.predict_text import predict_emotion
+import torch
 
-# Google Drive 파일 ID (너의 kcbert_max.pt 공유 링크에서 추출)
-FILE_ID = "1k5UxaYqj3ExEJUxwRBiDatHYYGRYJN31"  # Google Drive ID
-
-# 모델 & 토크나이저 캐싱 로드
+FILE_ID = "1k5UxaYqj3ExEJUxwRBiDatHYYGRYJN31"  # Google Drive 공유 링크에서 추출한 ID
 model, tokenizer = load_model_and_tokenizer_from_drive(FILE_ID)
 
-def predict_emotion_from_text(text):
-    return predict_emotion(text, model, tokenizer)
+labels = [
+    "행복/기쁨/감사",
+    "신뢰/편안/존경/안정",
+    "분노/짜증/불편",
+    "당황/충격/배신감",
+    "공포/불안",
+    "고독/외로움/소외감/허탈",
+    "죄책감/미안함",
+    "걱정/고민/긴장"
+]
 
-
-print("✅ 모델 클래스:", model.__class__)
-print("✅ 로딩한 체크포인트:", model.config._name_or_path)
+def predict_emotion(text):
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
+    with torch.no_grad():
+        outputs = model(**inputs)
+        probs = torch.nn.functional.softmax(outputs.logits, dim=1)
+        pred = torch.argmax(probs, dim=1).item()
+        confidence = probs[0][pred].item()
+    return labels[pred], confidence
