@@ -2,7 +2,7 @@ import os
 import tempfile
 
 from backend.chatbot import generate_response
-from backend.db import save_message
+from backend.db import init_db
 from inference import predict_emotion_from_text
 from log_emotion import log_emotion
 from reports.generate_report import generate_html_report
@@ -84,8 +84,8 @@ if page == "내 감정 입력하기":
         emotion, confidence = predict_emotion_from_text(user_input)
 
         # 3. 저장
-        save_message("user", user_input)
-        save_message("bot", bot_reply)
+        init_db("user", user_input)
+        init_db("bot", bot_reply)
         log_emotion(username, emotion, confidence)
 
         # 4. 대화 기록 저장
