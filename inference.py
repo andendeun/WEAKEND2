@@ -9,3 +9,7 @@ model, tokenizer = load_model_and_tokenizer_from_drive(FILE_ID)
 
 def predict_emotion_from_text(text):
     return predict_emotion(text, model, tokenizer)
+
+
+print("✅ 모델 클래스:", model.__class__)
+print("✅ 로딩한 체크포인트:", model.config._name_or_path)
