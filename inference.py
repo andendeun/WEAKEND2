@@ -65,3 +65,10 @@ if __name__ == "__main__":
                 print(f"  - [{label_level}] 예측 감정: {label} | Top Score: {max(probs):.4f}")
             except Exception as e:
                 print(f"  - [{label_level}] ❌ 실패 ({e})")
+
+# inference.py 맨 아래에 추가
+def predict_emotion_from_text(text, model_name="kcbert", label_level="대분류"):
+    model, tokenizer, id2label, device = load_model(model_name, label_level)
+    label, _ = predict(text, model, tokenizer, id2label, device)
+    return label
+
