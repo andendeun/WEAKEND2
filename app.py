@@ -6,7 +6,7 @@ from auth import register, login
 from chatbot import generate_response
 from db import save_message
 
-from inference import predict
+from inference import predict, predict_emotion_from_text
 from log_emotions import log_emotion
 from gpt_feedback import get_gpt_feedback
 from analyze_flow import generate_emotion_plot
