@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 
 # Google Drive 파일 ID
-FILE_ID = "1k5UxaY1k5Ux1SCS29CyOSaJbk5bRcU-uNCZ0JT3QR3Ma"
+FILE_ID = "1SCS29CyOSaJbk5bRcU-uNCZ0JT3QR3Ma"
 
 model, tokenizer = load_model_and_tokenizer_from_drive(
     FILE_ID, 
