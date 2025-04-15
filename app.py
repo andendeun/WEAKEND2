@@ -110,7 +110,7 @@ if page == "내 감정 입력하기":
 elif page == "감정 리포트":
     st.title("📈 감정 변화 리포트")
     username = st.text_input("이름을 입력하세요", value="사용자")
-    fig = generate_emotion_plot(username)
+    fig = plot_emotion_trend(username)
     st.pyplot(fig)
 
 # ──────────────────────────────
