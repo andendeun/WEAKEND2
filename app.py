@@ -120,7 +120,7 @@ elif page == "리포트 다운로드":
     st.title("📄 감정 리포트 PDF 다운로드")
     username = st.text_input("이름을 입력하세요", value="사용자")
     if st.button("📥 PDF 저장하기"):
-        pdf_path = generate_pdf(username)
+        pdf_path = generate_html_report(username)
         with open(pdf_path, "rb") as f:
             st.download_button(
                 label="📩 리포트 다운로드",
