@@ -1,14 +1,9 @@
 import torch
-from transformers import BertTokenizer, BertForSequenceClassification
-
-def load_model(model_path):
-    model = BertForSequenceClassification.from_pretrained("bert-base-multilingual-cased", num_labels=42)
-    model.load_state_dict(torch.load(model_path))
-    model.eval()
-    return model
 
 def predict_emotion(text, model, tokenizer):
+    model.eval()
     inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
-    outputs = model(**inputs)
-    predicted = torch.argmax(outputs.logits, dim=1)
+    with torch.no_grad():
+        outputs = model(input_ids=inputs["input_ids"], attention_mask=inputs["attention_mask"])
+        predicted = torch.argmax(outputs, dim=1)
     return predicted.item()
