@@ -11,6 +11,8 @@ matplotlib
 Pillow
 seaborn
 fpdf
+gdown
+
 
 
 
