@@ -83,8 +83,6 @@ def show_main_page():
     if page == "내 감정 입력하기":
         st.title("☀️WEAKEND 감정 상담 챗봇")
 
-        username = st.text_input("🙋‍♀️ 이름을 입력해주세요", value=st.session_state["username"])
-
         audio_file = st.file_uploader("🎤 음성 파일을 업로드하세요 (WAV)", type=["wav"])
         user_input = ""
 
@@ -131,7 +129,6 @@ def show_main_page():
     # ──────────────────────────────
     elif page == "감정 리포트":
         st.title("📈 감정 변화 리포트")
-        username = st.text_input("이름을 입력하세요", value=st.session_state["username"])
         fig = plot_emotion_trend(username)
         st.pyplot(fig)
 
@@ -140,7 +137,6 @@ def show_main_page():
     # ──────────────────────────────
     elif page == "리포트 다운로드":
         st.title("📄 감정 리포트 PDF 다운로드")
-        username = st.text_input("이름을 입력하세요", value=st.session_state["username"])
         if st.button("📥 PDF 저장하기"):
             pdf_path = generate_html_report(username)
             with open(pdf_path, "rb") as f:
