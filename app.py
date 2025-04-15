@@ -2,15 +2,12 @@ import streamlit as st
 import speech_recognition as sr
 import re
 
-from auth import register, login
-from chatbot import generate_response
-from db import save_message
+from backend.db import save_message
+from backend.chatbot import generate_response
+from inference import predict_emotion_from_text
+from log_emotion import log_emotion
 
-from inference import predict, predict_emotion_from_text
-from log_emotions import log_emotion
-from gpt_feedback import get_gpt_feedback
-from analyze_flow import generate_emotion_plot
-from generate_pdf import generate_pdf
+
 
 # --- 앱 초기 설정 ---
 st.set_page_config(page_title="☀️WEAKEND☀️", layout="centered")
@@ -77,7 +74,6 @@ if st.session_state["logged_in"]:
 
             # 2. 로그 저장
             log_emotion(username, emotion, user_input)
-            save_message(username, "user", user_input)
 
             # 3. GPT 피드백 생성
             gpt_reply = get_gpt_feedback(user_input, emotion)

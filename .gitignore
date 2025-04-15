@@ -1,17 +1,4 @@
-# 모델 & 오디오 파일
 *.pt
-*.wav
-*.mp3
-*.zip
-*.pkl
-*.npy
-*.h5
-
-# 실행 환경
-venv/
+models/
+conversation.db
 __pycache__/
-.DS_Store
-
-# 캐시 / 설정
-*.log
-.env
