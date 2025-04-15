@@ -34,6 +34,7 @@ train_texts, test_texts, train_labels, test_labels = train_test_split(
 # 4. 토크나이저
 tokenizer = ElectraTokenizer.from_pretrained("monologg/koelectra-base-discriminator")
 
+
 # 5. 커스텀 Dataset
 class EmotionDataset(Dataset):
     def __init__(self, texts, labels, tokenizer, max_len=128):
@@ -108,7 +109,7 @@ while True:
     print(f"✅ F1-score: {f1:.4f}")
 
     # 9. 조기 종료 조건
-    if acc >= 0.95:
+    if acc >= 0.90:
         print("🎉 목표 정확도 달성! 학습을 종료합니다.")
         torch.save(model.state_dict(), "koelectra_emotion.pt")
         print("📦 모델 저장 완료: koelectra_emotion.pt")

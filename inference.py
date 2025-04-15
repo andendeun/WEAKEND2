@@ -1,7 +1,7 @@
 from utils.load_model_from_drive import load_model_and_tokenizer_from_drive
 import torch
 
-FILE_ID = "1k5UxaYqj3ExEJUxwRBiDatHYYGRYJN31"  # Google Drive 공유 링크에서 추출한 ID
+FILE_ID = "1k5Ux1SCS29CyOSaJbk5bRcU-uNCZ0JT3QR3Ma"  # Google Drive 공유 링크에서 추출한 ID
 model, tokenizer = load_model_and_tokenizer_from_drive(FILE_ID)
 
 labels = [
