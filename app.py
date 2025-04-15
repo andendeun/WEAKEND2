@@ -6,7 +6,7 @@ import speech_recognition as sr
 import re
 
 # ▶ 추가: 로그인/회원가입 함수를 import해 사용
-from auth import register, login
+from backend.auth import register, login
 
 # ▶ 기존 코드 유지
 from backend.chatbot import generate_response
