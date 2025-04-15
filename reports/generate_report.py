@@ -1,4 +1,4 @@
-from emotion_trend_plot import plot_emotion_trend
+from reports.emotion_trend_plot import plot_emotion_trend
 from jinja2 import Template
 import datetime
 
