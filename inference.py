@@ -3,6 +3,12 @@ from transformers import AutoModel, AutoTokenizer
 from model import EmotionClassifier
 from dataset import EmotionDataset
 
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), 'training_local'))
+from model import EmotionClassifier
+
+
 def load_model(model_name, label_level):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
