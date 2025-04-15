@@ -1,5 +1,5 @@
 import argparse
-from train import train_model
+from train import train
 
 def get_progress_bar(current, total, bar_length=30):
     ratio = current / total
@@ -10,9 +10,9 @@ def get_progress_bar(current, total, bar_length=30):
 
 def run():
     parser = argparse.ArgumentParser(description="📚 감정 분류 모델 학습 실행기")
-    parser.add_argument('--model', type=str, default='all', choices=['kcbert', 'koelectra', 'klue', 'all'],
+    parser.add_argument('--model', type=str, choices=['kcbert', 'koelectra', 'klue', 'all'],
                         help='학습할 모델명 또는 all')
-    parser.add_argument('--level', type=str, default='all', choices=['대분류', '중분류', '소분류', 'all'],
+    parser.add_argument('--level', type=str, choices=['대분류', '중분류', '소분류', 'all'],
                         help='학습할 감정 레벨 또는 all')
     parser.add_argument('--epochs', type=int, default=3, help='학습할 에폭 수')
     parser.add_argument('--batch_size', type=int, default=16, help='배치 사이즈')
@@ -22,7 +22,7 @@ def run():
     args = parser.parse_args()
 
     model_list = ['kcbert', 'koelectra', 'klue'] if args.model == 'all' else [args.model]
-    level_list = ['대분류', '중분류', '소분류'] if args.level == 'all' else [args.level]
+    level_list = ['소분류'] if (args.level is None or args.level == 'all') else [args.level]
 
     def run_jobs(model_level_pairs):
         total = len(model_level_pairs)
@@ -37,10 +37,11 @@ def run():
             print(f"============================")
 
             try:
-                train_model(
+                train(
+                    xlsx_path=r"C:\eun\Workspaces\FinalProject_Clean\data\data_final_250410.xlsx",
                     model_name=model_name,
                     label_level=label_level,
-                    epochs=args.epochs,
+                    num_epochs=args.epochs,
                     batch_size=args.batch_size
                 )
                 print(f"✅ 학습 성공 → 모델: {model_name.upper()}, 레벨: {label_level}")
@@ -53,7 +54,7 @@ def run():
 
         return success, fail, fail_log
 
-    # 1차 학습
+    # 1차 학습a
     print(f"\n🧠 총 학습 조합 수: {len(model_list) * len(level_list)}개")
     jobs = [(m, l) for m in model_list for l in level_list]
     total_success, total_fail, failed_jobs = run_jobs(jobs)

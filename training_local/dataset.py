@@ -1,40 +1,11 @@
 import os
-import requests
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer
 
-# ✅ Google Drive에서 sample1.xlsx 다운로드
-XLSX_FILE_ID = "1_o7DRLRewzZfnRjKCexu-KNLfTFK8_gX"
-xlsx_path = "data/sample1.xlsx"
-
-def download_xlsx_from_drive(file_id, destination_path):
-    if not os.path.exists(destination_path):
-        print(f"📥 sample1.xlsx 다운로드 중: {destination_path}")
-        os.makedirs(os.path.dirname(destination_path), exist_ok=True)
-        url = f"https://drive.google.com/uc?export=download&id={file_id}"
-        response = requests.get(url, stream=True)
-        with open(destination_path, "wb") as f:
-            for chunk in response.iter_content(chunk_size=32768):
-                if chunk:
-                    f.write(chunk)
-        print("✅ 다운로드 완료")
-    else:
-        print("✅ sample1.xlsx 이미 존재")
-
-# ✅ 다운로드 실행
-download_xlsx_from_drive(XLSX_FILE_ID, xlsx_path)
-
 class EmotionDataset(Dataset):
     def __init__(self, file_path, tokenizer=None, levels=["대분류", "중분류", "소분류"], max_length=128, model_name="kcbert"):
-        """
-        file_path: .xlsx 파일 경로 (문자열) 또는 .xlsx 경로 리스트
-        tokenizer: 사전 로딩된 토크나이저 객체. 없으면 model_name에 따라 내부 로드.
-        levels: 자동 매핑할 열들 (예: ["대분류", "중분류", "소분류"])
-        max_length: 토큰 최대 길이
-        model_name: 모델명 (예: "kcbert", "koelectra", "klue")
-        """
         print("📂 XLSX 로딩 시작...")
         if isinstance(file_path, list):
             dfs = [pd.read_excel(path, engine='openpyxl') for path in file_path]
@@ -44,7 +15,7 @@ class EmotionDataset(Dataset):
         else:
             raise ValueError("file_path는 문자열 또는 문자열 리스트여야 합니다.")
 
-        self.df = self.df.dropna(subset=["문장"])
+        self.df = self.df.dropna(subset=["학습문장"])
         self.levels = levels
         self.max_length = max_length
 
@@ -59,7 +30,7 @@ class EmotionDataset(Dataset):
             mapping = self.label_mappings[level]
             self.df[f"{level}_id"] = self.df[level].fillna("NULL").map(mapping)
 
-        self.texts = self.df["문장"].tolist()
+        self.texts = self.df["학습문장"].tolist()
 
         if tokenizer is not None:
             self.tokenizer = tokenizer
@@ -102,7 +73,8 @@ class EmotionDataset(Dataset):
 
 # ✅ 테스트 코드 (단독 실행 시)
 if __name__ == "__main__":
-    print("🧪 EmotionDataset 단독 테스트 실행 중...\n")
+    print("🧪 EmotionDataset 실행 중...\n")
+    xlsx_path = r"C:\eun\Workspaces\FinalProject_Clean\data\data_final_250410.xlsx"
     dataset = EmotionDataset(
         file_path=xlsx_path,
         levels=["대분류", "중분류", "소분류"],

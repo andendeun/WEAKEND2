@@ -19,14 +19,9 @@ class EmotionClassifier(nn.Module):
         probs = F.softmax(logits, dim=-1)
         return probs
 
-# 수정된 앙상블 모델: 각 분류 레벨에 대해 별도의 분류기를 생성합니다.
+# 수정된 앙상블 모델: 각 분류 레벨에 대해 별도의 분류기를 생성
 class EnsembleEmotionModel:
     def __init__(self, num_labels_dict):
-        """
-        Args:
-            num_labels_dict (dict): 각 분류 레벨마다의 라벨 개수를 담은 딕셔너리.
-                                    예: {"대분류": 4, "중분류": 10, "소분류": 42}
-        """
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.num_labels_dict = num_labels_dict
         self.models = []
@@ -47,18 +42,9 @@ class EnsembleEmotionModel:
                 classifiers[level] = EmotionClassifier(transformer_model, 768, num_labels).to(self.device)
             self.models.append((model_name, tokenizer, classifiers))
         
-        print("✅ 모델 로드 완료")
+        print("모델 로드 완료")
     
     def predict(self, text):
-        """
-        입력 텍스트에 대해 각 모델 및 각 레벨별 예측 확률을 계산합니다.
-        반환 구조 예시:
-        {
-            "kcbert": {"대분류": tensor([...]), "중분류": tensor([...]), "소분류": tensor([...])},
-            "koelectra": { ... },
-            "klue": { ... }
-        }
-        """
         predictions = {}
         for model_name, tokenizer, classifiers in self.models:
             inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
