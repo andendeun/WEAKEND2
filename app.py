@@ -54,7 +54,7 @@ def show_login_page():
                 st.session_state["logged_in"] = True
                 st.session_state["username"] = user
                 st.success("로그인 성공! 🎉")
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("아이디 또는 비밀번호가 일치하지 않습니다.")
 
@@ -156,7 +156,7 @@ def show_main_page():
         st.session_state["logged_in"] = False
         st.session_state["username"] = ""
         st.session_state["chat_history"] = []
-        st.experimental_rerun()
+        st.rerun()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 3) 최종 실행 로직
