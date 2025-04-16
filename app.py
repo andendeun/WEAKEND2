@@ -27,6 +27,7 @@ if "username" not in st.session_state:
     st.session_state["username"] = ""
 if "chat_history" not in st.session_state:
     st.session_state["chat_history"] = []
+init_db()  # DB 초기화
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1) 로그인/회원가입 페이지 함수
