@@ -27,7 +27,7 @@ if "username" not in st.session_state:
     st.session_state["username"] = ""
 if "chat_history" not in st.session_state:
     st.session_state["chat_history"] = []
-init_db()  # DB 초기화
+init_db()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1) 로그인/회원가입 페이지 함수
@@ -110,14 +110,9 @@ def show_main_page():
             save_message("user", user_input)
             save_message("bot", bot_reply)
 
-            # 3. 감정 분석 및 저장
-            emotion, confidence = predict_emotion_from_text(user_input)
-            log_emotion(username, emotion, confidence)
-
-            # 4. 대화 히스토리 저장
+            # 3. 대화 히스토리 저장
             st.session_state.chat_history.append(("user", user_input))
             st.session_state.chat_history.append(("bot", bot_reply))
-            st.session_state.chat_history.append(("emotion", f"{emotion} ({confidence*100:.2f}%)"))
 
         # 말풍선 출력
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
