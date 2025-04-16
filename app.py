@@ -66,22 +66,18 @@ st.markdown("""
 
         .user-bubble {
             background-color: #A8E6CF;
-            color: #000;
             padding: 12px 16px;
             border-radius: 18px 18px 0px 18px;
             max-width: 75%;
-            gap: 10px;
             white-space: pre-wrap;
             word-break: break-word;
         }
 
         .bot-bubble {
             background-color: #ECECEC;
-            color: #000;
             padding: 12px 16px;
             border-radius: 18px 18px 18px 0px;
             max-width: 75%;
-            gap: 10px;
             white-space: pre-wrap;
             word-break: break-word;
         }
@@ -131,6 +127,11 @@ def show_login_page():
         st.subheader("회원가입")
         new_user = st.text_input("아이디")
         new_pass = st.text_input("비밀번호", type="password")
+        birthdate = st.date_input("생년월일")
+        region_options = get_region_list()
+        region = st.selectbox("거주지역", region_options if region_options else ["지역 선택 불가"])
+        phonenumber = st.text_input("전화번호 (ex.010-0000-0000)")
+        gender = st.selectbox("성별", ["남성", "여성"])
         if st.button("회원가입 확인"):
             if register(new_user, new_pass):
                 st.success("회원가입 완료! 로그인 해주세요.")
