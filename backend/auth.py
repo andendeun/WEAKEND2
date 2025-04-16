@@ -1,7 +1,7 @@
 from backend.db import supabase
 from datetime import date
 
-def register(login_id, password, birthdate, region, phonenumber, gender):
+def register(login_id, password, birthdate, region_id, phonenumber, gender):
     try:
         # 안전하게 None 검사
         result = supabase.table("users").select("login_id").eq("login_id", login_id).execute()
@@ -15,7 +15,7 @@ def register(login_id, password, birthdate, region, phonenumber, gender):
             "login_id": login_id,
             "password": password,
             "birthdate": birthdate,
-            "regionid": region,
+            "region_id": region_id,
             "phonenumber": phonenumber,
             "gender": gender,
             "last_activity": date.today().isoformat()

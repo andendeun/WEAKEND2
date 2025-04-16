@@ -129,12 +129,18 @@ def show_login_page():
             min_value=date.date(1900, 1, 1),
             max_value=date.date.today()
         )
+
         region_options = get_region_list()
-        region = st.selectbox("거주지역", region_options if region_options else ["지역 선택 불가"])
+        region_name_to_id = dict(region_options)  # { "서울": 1, "경기": 2, ... }
+        region_name = st.selectbox("거주지역", list(region_name_to_id.keys()))
+        region_id = region_name_to_id.get(region_name)
+
         phonenumber = st.text_input("핸드폰번호")
+
         if phonenumber and not re.match(r"^010-\d{4}-\d{4}$", phonenumber):
             st.error("핸드폰번호 형식이 올바르지 않습니다. 예: 010-0000-0000")
         gender = st.selectbox("성별", ["남성", "여성"])
+
         if st.button("회원가입하기"):
             if not re.match(r"^010-\d{4}-\d{4}$", phonenumber):
                 st.error("전화번호 형식이 올바르지 않습니다.")
@@ -143,7 +149,7 @@ def show_login_page():
                     login_id=login_id,
                     password=password,
                     birthdate=birthdate.strftime("%Y-%m-%d"),
-                    region=region,
+                    region_id=region_id,
                     phonenumber=phonenumber,
                     gender=gender
                 )
