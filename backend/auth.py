@@ -44,7 +44,7 @@ def login(login_id, password):
         return False
     if result.data[0]["password"] == password:
         # 로그인 성공 시 last_activity 업데이트
-        today = str(date.today())
+        today = str(datetime.today())
         supabase.table("users").update({"last_activity": today}).eq("login_id", login_id).execute()
         return True
     return False
