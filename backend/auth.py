@@ -3,8 +3,11 @@ from datetime import date
 
 def register(login_id, password, birthdate, region, phonenumber, gender):
     try:
+        # 안전하게 None 검사
         result = supabase.table("users").select("login_id").eq("login_id", login_id).execute()
-        if len(result.data) > 0:
+        existing_users = result.data if result.data else []
+
+        if len(existing_users) > 0:
             return False  # 이미 존재
 
         # INSERT
@@ -15,13 +18,13 @@ def register(login_id, password, birthdate, region, phonenumber, gender):
             "regionid": region,
             "phonenumber": phonenumber,
             "gender": gender,
-            "last_activity": date.now().isoformat()
+            "last_activity": date.today().isoformat()
         }).execute()
         return True
     except Exception as e:
         print("❌ 회원가입 실패:", e)
         return False
-
+    
 def login(login_id, password):
     result = supabase.table("users").select("password").eq("login_id", login_id).execute()
     if len(result.data) == 0:
