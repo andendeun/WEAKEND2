@@ -19,6 +19,26 @@ import streamlit as st
 
 # ▶ 페이지 설정
 st.set_page_config(page_title="WEAKEND 감정 챗봇", layout="centered")
+st.markdown("""
+    <style>
+        .block-container {
+            max-width: 450px;
+            min-height: 2000px;
+            margin: 40px auto;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+        }
+        body {
+            background-color: #f1f3f6;
+        }
+        h1 { font-size: 28px !important; text-align: center; }
+        h3 { font-size: 18px !important; text-align: center; }
+        button { font-size: 16px !important; }
+    </style>
+""", unsafe_allow_html=True)
 
 # ▶ 세션 상태 초기화
 if "logged_in" not in st.session_state:
@@ -84,7 +104,7 @@ def show_main_page():
     if page == "내 감정 입력하기":
         st.title("☀️WEAKEND 감정 상담 챗봇")
 
-        audio_file = st.file_uploader("🎤 음성 파일을 업로드하세요 (WAV)", type=["wav"])
+        audio_file = st.file_uploader("🎤 음성 파일을 업로드하세요 (WAV)", type=["wav","mp3"])
         user_input = ""
 
         if audio_file is not None:
