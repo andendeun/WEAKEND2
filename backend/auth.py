@@ -1,26 +1,24 @@
-import json
 import os
+from supabase import create_client
+from dotenv import load_dotenv
 
-USER_FILE = "users.json"
+load_dotenv()
 
-def load_users():
-    if os.path.exists(USER_FILE):
-        with open(USER_FILE, "r") as f:
-            return json.load(f)
-    return {}
-
-def save_users(users):
-    with open(USER_FILE, "w") as f:
-        json.dump(users, f)
+url = os.getenv("SUPABASE_URL")
+key = os.getenv("SUPABASE_KEY")
+supabase = create_client(url, key)
 
 def register(username, password):
-    users = load_users()
-    if username in users:
-        return False
-    users[username] = {"password": password}
-    save_users(users)
+    # 유저 중복 확인
+    result = supabase.table("users").select("username").eq("username", username).execute()
+    if len(result.data) > 0:
+        return False  # 이미 존재
+
+    supabase.table("users").insert({"username": username, "password": password}).execute()
     return True
 
 def login(username, password):
-    users = load_users()
-    return username in users and users[username]["password"] == password
+    result = supabase.table("users").select("password").eq("username", username).execute()
+    if len(result.data) == 0:
+        return False
+    return result.data[0]["password"] == password

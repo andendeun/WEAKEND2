@@ -9,7 +9,8 @@ def init_db():
         CREATE TABLE IF NOT EXISTS conversations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id TEXT,
-            input_text TEXT,
+            role TEXT,
+            message TEXT,
             emotion TEXT,
             timestamp TEXT
         )
@@ -19,13 +20,12 @@ def init_db():
 
 
 # DB에 대화 내용 저장
-def save_message(user_id, message, emotion=""):
+def save_message(user_id, role, message, emotion=""):
     conn = sqlite3.connect("conversation.db")
     c = conn.cursor()
     c.execute("""
-        INSERT INTO conversations (user_id, input_text, emotion, timestamp)
-        VALUES (?, ?, ?, ?)
-    """, (user_id, message, emotion, datetime.now().isoformat()))
+        INSERT INTO conversations (user_id, role, message, emotion, timestamp)
+        VALUES (?, ?, ?, ?, ?)
+    """, (user_id, role, message, emotion, datetime.now().isoformat()))
     conn.commit()
     conn.close()
-
