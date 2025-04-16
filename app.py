@@ -21,6 +21,23 @@ import streamlit as st
 st.set_page_config(page_title="WEAKEND 감정 챗봇", layout="centered")
 st.markdown("""
     <style>
+        .block-container {
+            max-width: 450px;
+            min-height: 2000px;
+            margin: 40px auto;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+        }
+        body {
+            background-color: #f1f3f6;
+        }
+        h1 { font-size: 28px !important; text-align: center; }
+        h3 { font-size: 18px !important; text-align: center; }
+        button { font-size: 16px !important; }
+            
         .chat-container {
             display: flex;
             flex-direction: column;
@@ -66,9 +83,8 @@ st.markdown("""
             white-space: pre-wrap;
             word-break: break-word;
         }
-    </style>
+    </style> 
 """, unsafe_allow_html=True)
-
 
 # ▶ 세션 상태 초기화
 if "logged_in" not in st.session_state:
