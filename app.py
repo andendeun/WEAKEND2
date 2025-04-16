@@ -136,13 +136,22 @@ def show_login_page():
             st.error("핸드폰번호 형식이 올바르지 않습니다. 예: 010-0000-0000")
         gender = st.selectbox("성별", ["남성", "여성"])
         if st.button("회원가입하기"):
-            if register(new_user, new_pass):
-                st.success("회원가입 완료! 로그인 해주세요.")
-                st.session_state["auth_page"] = "로그인"
-            elif not re.match(r"^010-\d{4}-\d{4}$", phonenumber):
-                st.error("전화번호 형식이 올바르지 않습니다.")           
+            if not re.match(r"^010-\d{4}-\d{4}$", phonenumber):
+                st.error("전화번호 형식이 올바르지 않습니다.")
             else:
-                st.error("이미 가입된 아이디입니다.")
+                success = register(
+                    username=new_user,
+                    password=new_pass,
+                    birthdate=birthdate.strftime("%Y-%m-%d"),
+                    region=region,
+                    phone=phonenumber,
+                    gender=gender
+                )
+                if success:
+                    st.success("회원가입 완료! 로그인 해주세요.")
+                    st.session_state["auth_page"] = "로그인"
+                else:
+                    st.error("이미 가입된 아이디입니다.")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2) 메인 (챗봇/리포트) 페이지 함수

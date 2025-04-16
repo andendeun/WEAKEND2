@@ -10,26 +10,26 @@ key = os.getenv("SUPABASE_KEY")
 supabase = create_client(url, key)
 
 def register(user_id, password, birthdate, regionid, phonenumber, gender):
-    # 유저 중복 확인 (id 기준)
-    result = supabase.table("users").select("id").eq("id", user_id).execute()
-    if len(result.data) > 0:
-        return False  # 이미 존재하는 사용자
+    try:
+        result = supabase.table("users").select("username").eq("username", id).execute()
+        if len(result.data) > 0:
+            return False  # 이미 존재
 
-    today = date.today().isoformat()
+         # today = date.today().isoformat()
 
-    # 최소 필수 정보만 입력
-    supabase.table("users").insert({
-        "id": id,
-        "password": password,
-        "birthyear": birthdate,
-        "region": regionid,
-        "phonenumber": phonenumber,
-        "gender": gender,
-        "signup_date": today,
-        "role": "user"
-    }).execute()
-
-    return True
+        supabase.table("users").insert({
+            "username": id,
+            "password": password,
+            "birthdate": birthdate,
+            "region": regionid,
+            "phonenumber": phonenumber,
+            "gender": gender,
+            "last_activity": date.now().isoformat()
+        }).execute()
+        return True
+    except Exception as e:
+        print("❌ 회원가입 실패:", e)
+        return False
 
 def login(user_id, password):
     result = supabase.table("users").select("password").eq("id", user_id).execute()
