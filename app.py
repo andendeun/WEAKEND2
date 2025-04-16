@@ -4,10 +4,7 @@ import tempfile
 import speech_recognition as sr
 import re
 
-# ▶ 추가: 로그인/회원가입 함수를 import해 사용
 from backend.auth import register, login
-
-# ▶ 기존 코드 유지
 from backend.chatbot import generate_response
 from backend.db import save_message
 from inference import predict_emotion_from_text
@@ -92,7 +89,6 @@ if "username" not in st.session_state:
     st.session_state["username"] = ""
 if "chat_history" not in st.session_state:
     st.session_state["chat_history"] = []
-init_db()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1) 로그인/회원가입 페이지 함수
