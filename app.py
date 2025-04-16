@@ -80,35 +80,44 @@ def show_main_page():
     # ──────────────────────────────
     # 1️⃣ 감정 입력 탭 (기존 코드 유지)
     # ──────────────────────────────
+def show_main_page():
+    page = st.sidebar.radio("탭 선택", ["내 감정 입력하기", "감정 리포트", "리포트 다운로드"])
+    username = st.session_state["username"]
+
     if page == "내 감정 입력하기":
         st.title("☀️WEAKEND 감정 상담 챗봇")
 
         audio_file = st.file_uploader("🎤 음성 파일을 업로드하세요 (WAV)", type=["wav"])
         user_input = ""
 
-        # ▼ 음성 인식 부분
         if audio_file is not None:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
                 tmp_file.write(audio_file.read())
-                # transcribe_audio 함수가 있다면 여기서 호출
-                # user_input = transcribe_audio(tmp_file.name)
-            st.success(f"📝 변환된 텍스트: {user_input}")
-        else:
+                recognizer = sr.Recognizer()
+                with sr.AudioFile(tmp_file.name) as source:
+                    audio_data = recognizer.record(source)
+                    try:
+                        user_input = recognizer.recognize_google(audio_data, language="ko-KR")
+                        st.success(f"📝 변환된 텍스트: {user_input}")
+                    except:
+                        st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
+
+        if not user_input:
             user_input = st.text_input("✏️ 감정을 표현해보세요")
 
         if user_input:
-            # 1. GPT 챗봇 응답
+            # 1. 챗봇 응답
             bot_reply = generate_response(user_input)
 
-            # 2. 감정 분석 (사용자 입력만)
-            emotion, confidence = predict_emotion_from_text(user_input)
-
-            # 3. 저장 - (※ init_db() 가 DB 초기화 함수인지, save_message() 대체인지 확인 필요)
-            init_db("user", user_input)  # <-- 원본 코드 그대로
+            # 2. DB 저장
+            init_db("user", user_input)
             init_db("bot", bot_reply)
+
+            # 3. 감정 분석 및 저장
+            emotion, confidence = predict_emotion_from_text(user_input)
             log_emotion(username, emotion, confidence)
 
-            # 4. 대화 기록
+            # 4. 대화 히스토리 저장
             st.session_state.chat_history.append(("user", user_input))
             st.session_state.chat_history.append(("bot", bot_reply))
             st.session_state.chat_history.append(("emotion", f"{emotion} ({confidence*100:.2f}%)"))
@@ -123,6 +132,7 @@ def show_main_page():
             elif sender == "emotion":
                 st.markdown(f'<div class="emotion-bubble">🧠 감정 분석: {msg}</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
+
 
     # ──────────────────────────────
     # 2️⃣ 감정 리포트 탭 (기존 코드 유지)
