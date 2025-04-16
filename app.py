@@ -146,8 +146,8 @@ def show_login_page():
                 st.error("전화번호 형식이 올바르지 않습니다.")
             else:
                 success, msg = register(
-                    login_id=new_user,
-                    password=new_pass,
+                    login_id=login_id,
+                    password=password,
                     birthdate=birthdate.strftime("%Y-%m-%d"),
                     region_id=region_id,
                     phonenumber=phonenumber,
