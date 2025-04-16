@@ -144,7 +144,7 @@ def show_login_page():
                     password=new_pass,
                     birthdate=birthdate.strftime("%Y-%m-%d"),
                     region=region,
-                    phone=phonenumber,
+                    phonenumber=phonenumber,
                     gender=gender
                 )
                 if success:
