@@ -3,9 +3,9 @@ from datetime import date
 
 def register(login_id, password, birthdate, region_id, phonenumber, gender):
     try:
-        # 안전하게 None 검사
+        # 정확한 비어있음 검사
         result = supabase.table("users").select("login_id").eq("login_id", login_id).execute()
-        if result.data and len(result.data) > 0:
+        if result.data is not None and len(result.data) > 0:
             return False  # 이미 존재
 
         # INSERT
