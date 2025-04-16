@@ -122,8 +122,8 @@ def show_login_page():
 
     elif st.session_state.get("auth_page") == "회원가입":
         st.subheader("회원가입")
-        new_user = st.text_input("아이디")
-        new_pass = st.text_input("비밀번호", type="password")
+        login_id = st.text_input("아이디")
+        password = st.text_input("비밀번호", type="password")
         birthdate = st.date_input(
             "생년월일",
             min_value=date.date(1900, 1, 1),
@@ -140,8 +140,8 @@ def show_login_page():
                 st.error("전화번호 형식이 올바르지 않습니다.")
             else:
                 success = register(
-                    login_id=new_user,
-                    password=new_pass,
+                    login_id=login_id,
+                    password=password,
                     birthdate=birthdate.strftime("%Y-%m-%d"),
                     region=region,
                     phonenumber=phonenumber,
