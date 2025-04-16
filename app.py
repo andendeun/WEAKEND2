@@ -23,7 +23,7 @@ st.markdown("""
     <style>
         .block-container {
             max-width: 450px;
-            min-height: 2000px;
+            min-height: 800px;
             margin: 40px auto;
             background-color: white;
             border: 1px solid #ddd;
@@ -43,6 +43,8 @@ st.markdown("""
         flex-direction: column;
         gap: 20px;
         margin-top: 20px;
+        max-height: 500px;
+        overflow-y: auto;
         }
         
         .chat-bubble {
@@ -64,6 +66,7 @@ st.markdown("""
             padding: 12px 16px;
             border-radius: 18px 18px 0px 18px;
             max-width: 90%;
+            white-space: pre-wrap;
             word-wrap: break-word;
         }
 
@@ -74,6 +77,7 @@ st.markdown("""
             padding: 12px 16px;
             border-radius: 18px 18px 18px 0px;
             max-width: 90%;
+            white-space: pre-wrap;
             word-wrap: break-word;
         }
     </style>
