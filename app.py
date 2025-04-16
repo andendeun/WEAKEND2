@@ -9,7 +9,7 @@ from backend.auth import register, login
 
 # ▶ 기존 코드 유지
 from backend.chatbot import generate_response
-from backend.db import init_db, save_message
+from backend.db import save_message
 from inference import predict_emotion_from_text
 from log_emotion import log_emotion
 from reports.generate_report import generate_html_report
