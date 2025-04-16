@@ -37,6 +37,33 @@ st.markdown("""
         h1 { font-size: 28px !important; text-align: center; }
         h3 { font-size: 18px !important; text-align: center; }
         button { font-size: 16px !important; }
+            
+        .chat-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 20px;
+        }
+
+        .user-bubble {
+            align-self: flex-end;
+            background-color: #A8E6CF;
+            color: #000;
+            padding: 12px 16px;
+            border-radius: 18px 18px 0px 18px;
+            max-width: 75%;
+            word-wrap: break-word;
+        }
+
+        .bot-bubble {
+            align-self: flex-start;
+            background-color: #ECECEC;
+            color: #000;
+            padding: 12px 16px;
+            border-radius: 18px 18px 18px 0px;
+            max-width: 75%;
+            word-wrap: break-word;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -141,9 +168,8 @@ def show_main_page():
                 st.markdown(f'<div class="user-bubble">{msg}</div>', unsafe_allow_html=True)
             elif sender == "bot":
                 st.markdown(f'<div class="bot-bubble">{msg}</div>', unsafe_allow_html=True)
-            elif sender == "emotion":
-                st.markdown(f'<div class="emotion-bubble">🧠 감정 분석: {msg}</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
+
 
 
     # ──────────────────────────────
