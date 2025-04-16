@@ -131,12 +131,16 @@ def show_login_page():
         birthdate = st.date_input("생년월일")
         region_options = get_region_list()
         region = st.selectbox("거주지역", region_options if region_options else ["지역 선택 불가"])
-        phonenumber = st.text_input("전화번호 (ex.010-0000-0000)")
+        phonenumber = st.text_input("핸드폰번호")
+        if phonenumber and not re.match(r"^010-\d{4}-\d{4}$", phonenumber):
+            st.error("핸드폰번호 형식이 올바르지 않습니다. 예: 010-0000-0000")
         gender = st.selectbox("성별", ["남성", "여성"])
-        if st.button("회원가입 확인"):
+        if st.button("회원가입하기"):
             if register(new_user, new_pass):
                 st.success("회원가입 완료! 로그인 해주세요.")
                 st.session_state["auth_page"] = "로그인"
+            elif not re.match(r"^010-\d{4}-\d{4}$", phonenumber):
+                st.error("전화번호 형식이 올바르지 않습니다.")           
             else:
                 st.error("이미 가입된 아이디입니다.")
 
