@@ -1,20 +1,25 @@
 from backend.db import supabase
 from datetime import datetime
 
+
 def register(login_id, password, birthdate, region_id, phonenumber, gender):
     try:
-        # 아이디 중복 확인
+        # 1. 중복 ID 확인
         id_check = supabase.table("users").select("login_id").eq("login_id", login_id).execute()
-        if id_check.data is not None and len(id_check.data) > 0:
+        print("🟡 ID 중복 조회 결과:", id_check.data)
+
+        if id_check.data and len(id_check.data) > 0:
             return False, "이미 존재하는 아이디입니다."
 
-        # 전화번호 중복 확인
+        # 2. 중복 전화번호 확인
         phone_check = supabase.table("users").select("phonenumber").eq("phonenumber", phonenumber).execute()
-        if phone_check.data is not None and len(phone_check.data) > 0:
+        print("🟡 전화번호 중복 조회 결과:", phone_check.data)
+
+        if phone_check.data and len(phone_check.data) > 0:
             return False, "이미 가입된 전화번호입니다."
 
-        # insert 실행
-        supabase.table("users").insert({
+        # 3. 회원 정보 삽입
+        insert_result = supabase.table("users").insert({
             "login_id": login_id,
             "password": password,
             "birthdate": birthdate,
@@ -24,13 +29,13 @@ def register(login_id, password, birthdate, region_id, phonenumber, gender):
             "last_activity": datetime.now().isoformat()
         }).execute()
 
+        print("✅ Insert 결과:", insert_result.data)
+
         return True, "회원가입 성공"
 
     except Exception as e:
-        print("❌ 회원가입 중 오류:", e)
+        print("❌ 회원가입 오류:", e)
         return False, "서버 오류가 발생했습니다."
-
-
     
     
 def login(login_id, password):

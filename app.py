@@ -145,19 +145,21 @@ def show_login_page():
             if not re.match(r"^010-\d{4}-\d{4}$", phonenumber):
                 st.error("전화번호 형식이 올바르지 않습니다.")
             else:
-                success = register(
-                    login_id=login_id,
-                    password=password,
+                success, msg = register(
+                    login_id=new_user,
+                    password=new_pass,
                     birthdate=birthdate.strftime("%Y-%m-%d"),
                     region_id=region_id,
                     phonenumber=phonenumber,
                     gender=gender
                 )
+
                 if success:
-                    st.success("회원가입 완료! 로그인 해주세요.")
+                    st.success(msg)
                     st.session_state["auth_page"] = "로그인"
                 else:
-                    st.error("이미 가입된 아이디입니다.")
+                    st.error(msg)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2) 메인 (챗봇/리포트) 페이지 함수
