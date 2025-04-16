@@ -14,6 +14,7 @@ from inference import predict_emotion_from_text
 from log_emotion import log_emotion
 from reports.generate_report import generate_html_report
 from reports.emotion_trend_plot import plot_emotion_trend
+from backend.db import get_region_list
 
 import streamlit as st
 
