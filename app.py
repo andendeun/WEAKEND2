@@ -21,69 +21,54 @@ import streamlit as st
 st.set_page_config(page_title="WEAKEND 감정 챗봇", layout="centered")
 st.markdown("""
     <style>
-        .block-container {
-            max-width: 450px;
-            min-height: 800px;
-            margin: 40px auto;
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            padding: 30px 20px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-        }
-        body {
-            background-color: #f1f3f6;
-        }
-        h1 { font-size: 28px !important; text-align: center; }
-        h3 { font-size: 18px !important; text-align: center; }
-        button { font-size: 16px !important; }
-            
         .chat-container {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        margin-top: 20px;
-        max-height: 500px;
-        overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+            max-height: 500px;
+            overflow-y: auto;
         }
-        
+
         .chat-bubble {
-        display: flex;
-        gap: 10px;
-        align-items: flex-start;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
         }
 
         .chat-bubble img {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        }      
-        
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .user-bubble-wrapper {
+            display: flex;
+            justify-content: flex-end;
+        }
+
         .user-bubble {
-            align-self: flex-end;
             background-color: #A8E6CF;
             color: #000;
             padding: 12px 16px;
             border-radius: 18px 18px 0px 18px;
-            max-width: 90%;
+            max-width: 75%;
             white-space: pre-wrap;
-            word-wrap: break-word;
+            word-break: break-word;
         }
 
         .bot-bubble {
-            align-self: flex-start;
             background-color: #ECECEC;
             color: #000;
             padding: 12px 16px;
             border-radius: 18px 18px 18px 0px;
-            max-width: 90%;
+            max-width: 75%;
             white-space: pre-wrap;
-            word-wrap: break-word;
+            word-break: break-word;
         }
     </style>
-            
-            
 """, unsafe_allow_html=True)
+
 
 # ▶ 세션 상태 초기화
 if "logged_in" not in st.session_state:
@@ -189,18 +174,18 @@ def show_main_page():
         for user_msg, bot_msg in paired_history:
             user_text = user_msg[1]
             bot_text = bot_msg[1]
+
             st.markdown(f'''
-                <div class="chat-bubble" style="margin-bottom: 16px;">
+                <div class="user-bubble-wrapper">
                     <div class="user-bubble">{user_text}</div>
                 </div>
-                <div class="chat-bubble" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 24px;">
+                <div class="chat-bubble" style="gap: 10px; margin-bottom: 24px;">
                     <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" width="24" height="24" style="margin-top: 4px;" />
                     <div class="bot-bubble">{bot_text}</div>
                 </div>
             ''', unsafe_allow_html=True)
 
         st.markdown('</div>', unsafe_allow_html=True)
-
 
 
     # ──────────────────────────────
