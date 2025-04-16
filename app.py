@@ -41,10 +41,22 @@ st.markdown("""
         .chat-container {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 20px;
         margin-top: 20px;
         }
+        
+        .chat-bubble {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        }
 
+        .chat-bubble img {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        }      
+        
         .user-bubble {
             align-self: flex-end;
             background-color: #A8E6CF;
@@ -65,6 +77,8 @@ st.markdown("""
             word-wrap: break-word;
         }
     </style>
+            
+            
 """, unsafe_allow_html=True)
 
 # ▶ 세션 상태 초기화
@@ -161,13 +175,26 @@ def show_main_page():
             st.session_state.chat_history.append(("user", user_input))
             st.session_state.chat_history.append(("bot", bot_reply))
 
-        # 말풍선 출력
+
+        # 쌍 단위 최신순 말풍선 출력
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-        for sender, msg in st.session_state.chat_history:
-            if sender == "user":
-                st.markdown(f'<div class="user-bubble">{msg}</div>', unsafe_allow_html=True)
-            elif sender == "bot":
-                st.markdown(f'<div class="bot-bubble">{msg}</div>', unsafe_allow_html=True)
+
+        paired_history = list(zip(st.session_state.chat_history[::2], st.session_state.chat_history[1::2]))
+        paired_history.reverse()
+
+        for user_msg, bot_msg in paired_history:
+            user_text = user_msg[1]
+            bot_text = bot_msg[1]
+            st.markdown(f'''
+                <div class="chat-bubble" style="margin-bottom: 16px;">
+                    <div class="user-bubble">{user_text}</div>
+                </div>
+                <div class="chat-bubble" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 24px;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" width="24" height="24" style="margin-top: 4px;" />
+                    <div class="bot-bubble">{bot_text}</div>
+                </div>
+            ''', unsafe_allow_html=True)
+
         st.markdown('</div>', unsafe_allow_html=True)
 
 
