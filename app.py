@@ -3,7 +3,7 @@ import tempfile
 
 import speech_recognition as sr
 import re
-
+import datetime as date
 from backend.auth import register, login
 from backend.chatbot import generate_response
 from backend.db import save_message
@@ -124,7 +124,11 @@ def show_login_page():
         st.subheader("회원가입")
         new_user = st.text_input("아이디")
         new_pass = st.text_input("비밀번호", type="password")
-        birthdate = st.date_input("생년월일")
+        birthdate = st.date_input(
+            "생년월일",
+            min_value=date.date(1900, 1, 1),
+            max_value=date.date.today()
+        )
         region_options = get_region_list()
         region = st.selectbox("거주지역", region_options if region_options else ["지역 선택 불가"])
         phonenumber = st.text_input("핸드폰번호")
