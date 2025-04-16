@@ -5,9 +5,7 @@ def register(login_id, password, birthdate, region_id, phonenumber, gender):
     try:
         # 안전하게 None 검사
         result = supabase.table("users").select("login_id").eq("login_id", login_id).execute()
-        existing_users = result.data if result.data else []
-
-        if len(existing_users) > 0:
+        if result.data and len(result.data) > 0:
             return False  # 이미 존재
 
         # INSERT
@@ -15,15 +13,17 @@ def register(login_id, password, birthdate, region_id, phonenumber, gender):
             "login_id": login_id,
             "password": password,
             "birthdate": birthdate,
-            "region_id": region_id,
+            "region_id": region_id,  # FK 정수 ID
             "phonenumber": phonenumber,
             "gender": gender,
-            "last_activity": date.today().isoformat()
+            "last_activity": date.now().isoformat()
         }).execute()
         return True
+    
     except Exception as e:
         print("❌ 회원가입 실패:", e)
         return False
+    
     
 def login(login_id, password):
     result = supabase.table("users").select("password").eq("login_id", login_id).execute()
