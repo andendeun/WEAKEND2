@@ -12,13 +12,13 @@ supabase = create_client(url, key)
 
 
 # DB에 대화 내용 저장
-def save_message(user_id, role, message, emotion=""):
+def save_message(login_id, role, message, emotion=""):
     conn = sqlite3.connect("conversation.db")
     c = conn.cursor()
     c.execute("""
         INSERT INTO conversations (user_id, role, message, emotion, timestamp)
         VALUES (?, ?, ?, ?, ?)
-    """, (user_id, role, message, emotion, datetime.now().isoformat()))
+    """, (login_id, role, message, emotion, datetime.now().isoformat()))
     conn.commit()
     conn.close()
 
