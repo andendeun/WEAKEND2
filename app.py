@@ -63,7 +63,7 @@ st.markdown("""
             color: #000;
             padding: 12px 16px;
             border-radius: 18px 18px 0px 18px;
-            max-width: 75%;
+            max-width: 90%;
             word-wrap: break-word;
         }
 
@@ -73,7 +73,7 @@ st.markdown("""
             color: #000;
             padding: 12px 16px;
             border-radius: 18px 18px 18px 0px;
-            max-width: 75%;
+            max-width: 90%;
             word-wrap: break-word;
         }
     </style>
