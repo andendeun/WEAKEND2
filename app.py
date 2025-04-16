@@ -70,6 +70,7 @@ st.markdown("""
             padding: 12px 16px;
             border-radius: 18px 18px 0px 18px;
             max-width: 75%;
+            gap: 10px;
             white-space: pre-wrap;
             word-break: break-word;
         }
@@ -80,6 +81,7 @@ st.markdown("""
             padding: 12px 16px;
             border-radius: 18px 18px 18px 0px;
             max-width: 75%;
+            gap: 10px;
             white-space: pre-wrap;
             word-break: break-word;
         }
