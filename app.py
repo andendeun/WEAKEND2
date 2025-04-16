@@ -9,7 +9,7 @@ from backend.auth import register, login
 
 # ▶ 기존 코드 유지
 from backend.chatbot import generate_response
-from backend.db import init_db
+from backend.db import init_db, save_message
 from inference import predict_emotion_from_text
 from log_emotion import log_emotion
 from reports.generate_report import generate_html_report
@@ -74,16 +74,12 @@ def show_login_page():
 #    (기존 3개 탭: 내 감정 입력하기, 감정 리포트, 리포트 다운로드)
 # ─────────────────────────────────────────────────────────────────────────────
 def show_main_page():
-    # 사이드바 탭 선택
     page = st.sidebar.radio("탭 선택", ["내 감정 입력하기", "감정 리포트", "리포트 다운로드"])
+    username = st.session_state["username"]
 
     # ──────────────────────────────
     # 1️⃣ 감정 입력 탭 (기존 코드 유지)
     # ──────────────────────────────
-def show_main_page():
-    page = st.sidebar.radio("탭 선택", ["내 감정 입력하기", "감정 리포트", "리포트 다운로드"])
-    username = st.session_state["username"]
-
     if page == "내 감정 입력하기":
         st.title("☀️WEAKEND 감정 상담 챗봇")
 
@@ -110,8 +106,8 @@ def show_main_page():
             bot_reply = generate_response(user_input)
 
             # 2. DB 저장
-            init_db("user", user_input)
-            init_db("bot", bot_reply)
+            save_message("user", user_input)
+            save_message("bot", bot_reply)
 
             # 3. 감정 분석 및 저장
             emotion, confidence = predict_emotion_from_text(user_input)
