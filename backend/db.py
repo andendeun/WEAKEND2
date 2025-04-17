@@ -1,35 +1,38 @@
 import os
-import sqlite3
 from datetime import datetime
 from supabase import create_client
 from dotenv import load_dotenv
 
 
 load_dotenv()
-
 url = os.getenv("SUPABASE_URL")
 key = os.getenv("SUPABASE_KEY")
 supabase = create_client(url, key)
 
+def get_userid_by_login(login_id: str) -> int | None:
+    """login_id로부터 users.userid를 조회해서 반환"""
+    res = supabase.table("users") \
+        .select("userid") \
+        .eq("login_id", login_id) \
+        .single() \
+        .execute()
+    return res.data["userid"] if res.data else None
 
-# DB에 대화 내용 저장
-def save_message(login_id, role, message, emotion=""):
-    conn = sqlite3.connect("conversation.db")
-    c = conn.cursor()
-    c.execute("""
-        INSERT INTO conversations (user_id, role, message, emotion, timestamp)
-        VALUES (?, ?, ?, ?, ?)
-    """, (login_id, role, message, emotion, datetime.now().isoformat()))
-    conn.commit()
-    conn.close()
+def save_message(login_id: str, role: str, message: str, emotion: str = "") -> None:
+    """
+    Supabase의 chat_log 테이블에 저장합니다.
+    - userid: users.userid (int)
+    - chat_time: 현재 시각
+    - chat_content: message (text)
+    - chat_role: role (varchar)
+    """
+    user_id = get_userid_by_login(login_id)
+    if user_id is None:
+        raise ValueError(f"Unknown login_id: {login_id}")
 
-# 지역 정보 등록
-def get_region_list():
-    try:
-        response = supabase.table("region").select("region_id, region_name").execute()
-        region_data = response.data or []
-        return [(r["region_name"], r["region_id"]) for r in region_data]  # [(이름, id)] 튜플 리스트
-    except Exception as e:
-        st.error(f"지역 정보를 불러오지 못했습니다: {e}")
-        return []
-
+    supabase.table("chat_log").insert({
+        "userid":        user_id,
+        "chat_time":     datetime.now().isoformat(),
+        "chat_content":  message,
+        "chat_role":     role
+    }).execute()
