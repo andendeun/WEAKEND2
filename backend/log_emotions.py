@@ -3,11 +3,7 @@ from datetime import date, datetime
 from supabase import create_client
 from dotenv import load_dotenv
 from inference import predict_emotion_with_score
-
-load_dotenv()
-url         = os.getenv("SUPABASE_URL")
-service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-supabase    = create_client(url, service_key)
+from backend.db import supabase, get_userid_by_login
 
 def log_emotion(login_id: str, role: str, message: str) -> None:
     # 1) userid 조회
