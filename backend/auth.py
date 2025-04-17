@@ -1,5 +1,5 @@
 from backend.db import supabase
-from datetime import date
+from datetime import datetime
 
 
 def register(login_id, password, birthdate, region_id, phonenumber, gender):
@@ -22,9 +22,9 @@ def register(login_id, password, birthdate, region_id, phonenumber, gender):
             "region_id": region_id,
             "phonenumber": phonenumber,
             "gender": gender,
-            "last_activity": date.now().isoformat()
-            "signup_date": date.today().isoformat(), 
-            "last_activity": date.now().isoformat(),
+            "last_activity": datetime.now().isoformat()
+            "signup_date": datetime.today().isoformat(), 
+            "last_activity": datetime.now().isoformat(),
             "role": "user"              
         }).execute()
 
