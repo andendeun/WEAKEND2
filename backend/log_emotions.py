@@ -20,7 +20,6 @@ def log_emotion(login_id: str, role: str, message: str) -> None:
         "chat_time":    datetime.now().isoformat(),
         "chat_content": message,
         "chat_role":    role,
-        "emotion":      None
     }).execute()
     chat_id = chat_ins.data[0]["chat_id"]
 
