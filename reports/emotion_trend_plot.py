@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 # 한글 폰트 설정
 plt.rc('font', family='Malgun Gothic')
-plt.rc('axes.unicode_minus', False)
+plt.rc('axes', unicode_minus=False)
 
 def plot_emotion_trend(login_id: str) -> plt.Figure:
     """
