@@ -1,13 +1,13 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from reports.generate_report import get_emotion_report  # 데이터 로딩
+from .generate_report import get_emotion_report
 
 def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure:
     df = get_emotion_report(login_id)
     df["분석 날짜"] = pd.to_datetime(df["분석 날짜"]).dt.date
     df = df[(df["분석 날짜"] >= start_date) & (df["분석 날짜"] <= end_date)]
-    # 그룹화·피벗
-    pivot = df.groupby(["분석 날짜", "감정 카테고리"]).size().unstack(fill_value=0)
+    pivot = df.groupby(["분석 날짜", "감정 카테고리"]) \
+              .size().unstack(fill_value=0)
 
     fig, ax = plt.subplots()
     pivot.plot(ax=ax)

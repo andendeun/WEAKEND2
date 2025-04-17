@@ -5,8 +5,7 @@ import re
 import datetime as date
 from backend.auth import register, login
 from backend.chatbot import generate_response
-from reports.emotion_trend_plot import plot_emotion_trend
-from reports.generate_report import create_pdf_report
+from reports import plot_emotion_trend, get_emotion_report, create_pdf_report
 import pandas as pd
 import matplotlib.pyplot as plt
 from backend.db import get_region_list
@@ -231,19 +230,22 @@ def show_main_page():
         # ──────────────────────────────
     elif page == "감정 리포트":
         st.title("📊 감정 변화 트렌드")
-        # 1) 기간 선택
         start_date, end_date = st.date_input(
-            "조회 기간", [default_start, default_end]
+            "조회 기간",
+            [get_emotion_report(username)["분석 날짜"].min(),
+            get_emotion_report(username)["분석 날짜"].max()]
         )
-        # 2) plot_emotion_trend 에 기간 전달
         fig = plot_emotion_trend(username, start_date, end_date)
         st.pyplot(fig)
 
-    elif page == "리포트 다운로드":
-        st.title("📄 리포트 다운로드")
-        if st.button("PDF 생성"):
-            pdf_bytes = create_pdf_report(username)
-            st.download_button("PDF 저장", pdf_bytes, file_name=f"{username}_report.pdf")
+        # ↳ 다운로드 버튼은 같은 블록 안에 삽입
+        pdf_bytes = create_pdf_report(username)
+        st.download_button(
+            label="📥 리포트 PDF 다운로드",
+            data=pdf_bytes,
+            file_name=f"{username}_감정리포트_{date.today()}.pdf",
+            mime="application/pdf"
+        )
 
 
     # ──────────────────────────────
