@@ -7,6 +7,8 @@ from backend.auth import register, login
 from backend.chatbot import generate_response
 from reports.emotion_trend_plot import plot_emotion_trend
 from reports.generate_report import get_emotion_report
+import pandas as pd
+import matplotlib.pyplot as plt
 from backend.db import get_region_list
 from backend.log_emotions import log_emotion
 
@@ -228,49 +230,46 @@ def show_main_page():
     # 2️⃣ 감정 리포트 탭 (기존 코드 유지)
         # ──────────────────────────────
     elif page == "감정 리포트":
-        import pandas as pd
-        import matplotlib.pyplot as plt
-
         st.title("📊 감정 분석 리포트")
-        # 1) 데이터 가져오기
+
+        # 1) 원본 데이터 로드
         df = get_emotion_report(username)
         if df.empty:
-            st.info("아직 분석된 데이터가 없습니다. 먼저 챗봇을 통해 대화를 입력해 주세요.")
+            st.info("아직 분석된 데이터가 없습니다. 먼저 챗봇으로 대화를 남겨보세요.")
             return
 
-        # 2) 날짜 컬럼 datetime으로 변환
+        # 2) 날짜 컬럼 파싱
         df["분석 날짜"] = pd.to_datetime(df["분석 날짜"]).dt.date
 
         # 3) 기간 선택
-        min_date = df["분석 날짜"].min()
-        max_date = df["분석 날짜"].max()
         start_date, end_date = st.date_input(
-            "분석 기간 선택", [min_date, max_date]
+            "분석 기간 선택", 
+            [df["분석 날짜"].min(), df["분석 날짜"].max()]
         )
-        filtered = df[
-            (df["분석 날짜"] >= start_date) &
-            (df["분석 날짜"] <= end_date)
-        ]
-        if filtered.empty:
+        filt = df[(df["분석 날짜"]>= start_date) & (df["분석 날짜"]<= end_date)]
+        if filt.empty:
             st.warning("선택한 기간에 데이터가 없습니다.")
             return
 
-        # 4) 차트 그리기
-        fig, ax = plt.subplots()
-        pivot = filtered.groupby(["분석 날짜", "감정 카테고리"]) \
-                        .size().unstack(fill_value=0)
-        pivot.plot(ax=ax)
-        ax.set_title("감정별 발화 빈도 변화")
-        ax.set_xlabel("분석 날짜")
-        ax.set_ylabel("발화 수")
-        ax.legend(title="감정", bbox_to_anchor=(1.05, 1), loc="upper left")
-        plt.xticks(rotation=45)
-        plt.tight_layout()
-        st.pyplot(fig)
+        # 4) 탭으로 보기 분리
+        tab1, tab2 = st.tabs(["감정 변화 트렌드", "카테고리별 요약"])
+        with tab1:
+            # emotion_trend_plot.py 의 라인 차트
+            fig = plot_emotion_trend(username)
+            st.pyplot(fig)
+        with tab2:
+            # 카테고리별 막대차트 (가로)
+            counts = filt["감정 카테고리"].value_counts()
+            fig2, ax2 = plt.subplots()
+            counts.plot.barh(ax=ax2)
+            ax2.set_title("기간 내 감정 카테고리 발화 수")
+            ax2.set_xlabel("발화 수")
+            ax2.set_ylabel("감정 카테고리")
+            plt.tight_layout()
+            st.pyplot(fig2)
 
-        # 5) 표 출력
-        st.dataframe(filtered, use_container_width=True)
-
+        # 5) 테이블
+        st.dataframe(filt, use_container_width=True)
 
 
 
