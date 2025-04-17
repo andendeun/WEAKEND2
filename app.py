@@ -6,12 +6,10 @@ import re
 import datetime as date
 from backend.auth import register, login
 from backend.chatbot import generate_response
-from backend.db import save_message
-from inference import predict_emotion_from_text
-from log_emotion import log_emotion
 from reports.generate_report import generate_html_report
 from reports.emotion_trend_plot import plot_emotion_trend
 from backend.db import get_region_list
+from backend.log_emotions import log_emotion
 
 import streamlit as st
 
@@ -194,15 +192,18 @@ def show_main_page():
             user_input = st.text_input("✏️ 감정을 표현해보세요")
 
         if user_input:
-            # 챗봇 응답
+            # 1) 유저 메시지 저장 및 감정 분석
+            log_emotion(st.session_state["username"], "user", user_input)
+            # 2) 챗봇 응답
             bot_reply = generate_response(
                 st.session_state["username"],
                 user_input
             )
-            # 대화 히스토리 누적
+            # 3) 챗봇 답변 저장 및 감정 분석
+            log_emotion(st.session_state["username"], "bot", bot_reply)
+            # 4) 대화 히스토리 누적
             st.session_state.chat_history.append(("user", user_input))
             st.session_state.chat_history.append(("bot", bot_reply))
-
 
         # 쌍 단위 최신순 말풍선 출력
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
