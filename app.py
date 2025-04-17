@@ -194,16 +194,12 @@ def show_main_page():
             user_input = st.text_input("✏️ 감정을 표현해보세요")
 
         if user_input:
-            # 1. 챗봇 응답 & DB 저장
+            # 챗봇 응답
             bot_reply = generate_response(
                 st.session_state["username"],
                 user_input
             )
-            # 2. DB 저장
-            save_message("user", user_input)
-            save_message("bot", bot_reply)
-
-            # 3. 대화 히스토리 저장
+            # 대화 히스토리 누적
             st.session_state.chat_history.append(("user", user_input))
             st.session_state.chat_history.append(("bot", bot_reply))
 
