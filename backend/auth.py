@@ -6,15 +6,11 @@ def register(login_id, password, birthdate, region_id, phonenumber, gender):
     try:
         # 1. 중복 ID 확인
         id_check = supabase.table("users").select("login_id").eq("login_id", login_id).execute()
-        print("🟡 ID 중복 조회 결과:", id_check.data)
-
         if id_check.data and len(id_check.data) > 0:
             return False, "이미 존재하는 아이디입니다."
 
         # 2. 중복 전화번호 확인
         phone_check = supabase.table("users").select("phonenumber").eq("phonenumber", phonenumber).execute()
-        print("🟡 전화번호 중복 조회 결과:", phone_check.data)
-
         if phone_check.data and len(phone_check.data) > 0:
             return False, "이미 가입된 전화번호입니다."
 
@@ -29,12 +25,12 @@ def register(login_id, password, birthdate, region_id, phonenumber, gender):
             "last_activity": datetime.now().isoformat()
         }).execute()
 
-        print("✅ Insert 결과:", insert_result.data)
-
-        return True, "회원가입 성공"
+        return True, "회원가입이 완료되었습니다."
 
     except Exception as e:
-        print("❌ 회원가입 오류:", e)
+        import traceback
+        print("🔥 회원가입 중 오류 발생:", e)
+        traceback.print_exc()  # 에러의 전체 traceback 콘솔에 출력
         return False, "서버 오류가 발생했습니다."
     
     
