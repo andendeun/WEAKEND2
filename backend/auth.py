@@ -22,7 +22,7 @@ def register(login_id, password, birthdate, region_id, phonenumber, gender):
             "region_id": region_id,
             "phonenumber": phonenumber,
             "gender": gender,
-            "last_activity": datetime.now().isoformat(),
+            "last_activity": datetime.now().isoformat(),   # @@나중에 세션 테이블에서 가져오는 걸로 바꾸기
             "signup_date": datetime.today().isoformat(),
             "role": "user"              
         }).execute()

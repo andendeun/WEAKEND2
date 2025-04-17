@@ -6,6 +6,8 @@ from openai.types.chat import ChatCompletionMessageParam
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# DB 저장 함수 가져오기
+from backend.db import save_message
 
 # 시스템 프롬프트: 상담사 역할
 system_prompt = """
@@ -19,9 +21,16 @@ chat_history: list[ChatCompletionMessageParam] = [
     {"role": "system", "content": system_prompt}
 ]
 
-def generate_response(user_input: str) -> str:
-    chat_history.append({"role": "user", "content": user_input})
+def generate_response(login_id: str, user_input: str) -> str:
+    # 1) user 메시지 DB 저장
+    save_message(login_id, "user", user_input)
 
+    # 2) OpenAI 호출
+    chat_history.append({"role": "user", "content": user_input})
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=chat_history
+     )
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=chat_history
@@ -29,5 +38,7 @@ def generate_response(user_input: str) -> str:
 
     reply = response.choices[0].message.content
     chat_history.append({"role": "assistant", "content": reply})
-    return reply
 
+    # 3) bot 답변 DB 저장
+    save_message(login_id, "bot", reply)
+    return reply
