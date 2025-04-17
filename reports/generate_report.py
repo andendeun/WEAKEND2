@@ -1,3 +1,5 @@
+# reports/generate_report.py
+
 import os
 import io
 from datetime import datetime
@@ -9,7 +11,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 def get_emotion_report(login_id: str) -> pd.DataFrame:
     """
-    login_id 로 users → chat_log → emotions 를 조회하여
+    login_id 로 users → chat_log → emotions 를 조회해
     DataFrame(컬럼: 분석 날짜, 감정 카테고리, 감정 확신도)으로 반환합니다.
     """
     load_dotenv()
@@ -21,7 +23,8 @@ def get_emotion_report(login_id: str) -> pd.DataFrame:
     user = supabase.table("users") \
         .select("userid") \
         .eq("login_id", login_id) \
-        .single().execute()
+        .single() \
+        .execute()
     if not user.data:
         return pd.DataFrame()
     user_id = user.data["userid"]
@@ -61,7 +64,7 @@ def get_emotion_report(login_id: str) -> pd.DataFrame:
 def create_pdf_report(login_id: str) -> bytes:
     """
     get_emotion_report() 결과를 표로 담아
-    reportlab 으로 PDF 를 생성, 바이트로 반환합니다.
+    reportlab 으로 PDF 를 생성해 바이트로 반환합니다.
     """
     df = get_emotion_report(login_id)
     buffer = io.BytesIO()
