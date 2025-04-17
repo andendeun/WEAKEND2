@@ -226,26 +226,54 @@ def show_main_page():
 
     # ──────────────────────────────
     # 2️⃣ 감정 리포트 탭 (기존 코드 유지)
-    # ──────────────────────────────
+        # ──────────────────────────────
     elif page == "감정 리포트":
+        import pandas as pd
+        import matplotlib.pyplot as plt
+
         st.title("📊 감정 분석 리포트")
-
-        # 1) 리포트 데이터 가져오기
+        # 1) 데이터 가져오기
         df = get_emotion_report(username)
-        st.write("▶ 디버그: get_emotion_report 리턴 행 수 =", len(df))
-        st.write(df.head())
-
-        # 2) 데이터 없으면 안내
         if df.empty:
             st.info("아직 분석된 데이터가 없습니다. 먼저 챗봇을 통해 대화를 입력해 주세요.")
             return
 
-        # 3) 트렌드 차트
-        fig = plot_emotion_trend(username)
+        # 2) 날짜 컬럼 datetime으로 변환
+        df["분석 날짜"] = pd.to_datetime(df["분석 날짜"]).dt.date
+
+        # 3) 기간 선택
+        min_date = df["분석 날짜"].min()
+        max_date = df["분석 날짜"].max()
+        start_date, end_date = st.date_input(
+            "분석 기간 선택", [min_date, max_date]
+        )
+        filtered = df[
+            (df["분석 날짜"] >= start_date) &
+            (df["분석 날짜"] <= end_date)
+        ]
+        if filtered.empty:
+            st.warning("선택한 기간에 데이터가 없습니다.")
+            return
+
+        # 4) 차트 그리기
+        fig, ax = plt.subplots()
+        pivot = filtered.groupby(["분석 날짜", "감정 카테고리"]) \
+                        .size().unstack(fill_value=0)
+        pivot.plot(ax=ax)
+        ax.set_title("감정별 발화 빈도 변화")
+        ax.set_xlabel("분석 날짜")
+        ax.set_ylabel("발화 수")
+        ax.legend(title="감정", bbox_to_anchor=(1.05, 1), loc="upper left")
+        plt.xticks(rotation=45)
+        plt.tight_layout()
         st.pyplot(fig)
 
-        # 4) 데이터 테이블
-        st.dataframe(df, use_container_width=True)
+        # 5) 표 출력
+        st.dataframe(filtered, use_container_width=True)
+
+
+
+
 
     # # ──────────────────────────────
     # # 3️⃣ 리포트 다운로드 탭 (기존 코드 유지)
