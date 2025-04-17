@@ -2,7 +2,7 @@ import os
 import tempfile
 import speech_recognition as sr
 import re
-import datetime as date
+from datetime import date
 from backend.auth import register, login
 from backend.chatbot import generate_response
 from reports import plot_emotion_trend, get_emotion_report, create_pdf_report
