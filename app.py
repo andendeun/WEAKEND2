@@ -1,13 +1,12 @@
 import os
 import tempfile
-
 import speech_recognition as sr
 import re
 import datetime as date
 from backend.auth import register, login
 from backend.chatbot import generate_response
-# from reports.generate_report import generate_html_report
-# from reports.emotion_trend_plot import plot_emotion_trend
+from reports.emotion_trend_plot import plot_emotion_trend
+from reports.generate_report import get_emotion_report
 from backend.db import get_region_list
 from backend.log_emotions import log_emotion
 
@@ -225,13 +224,22 @@ def show_main_page():
         st.markdown('</div>', unsafe_allow_html=True)
 
 
-    # # ──────────────────────────────
-    # # 2️⃣ 감정 리포트 탭 (기존 코드 유지)
-    # # ──────────────────────────────
-    # elif page == "감정 리포트":
-    #     st.title("📈 감정 변화 리포트")
-    #     fig = plot_emotion_trend(username)
-    #     st.pyplot(fig)
+    # ──────────────────────────────
+    # 2️⃣ 감정 리포트 탭 (기존 코드 유지)
+    # ──────────────────────────────
+    elif page == "감정 리포트":
+       st.title("📊 감정 분석 리포트")
+
+       # 1) 차트
+       fig = plot_emotion_trend(username)
+       st.pyplot(fig)
+
+       # 2) 데이터 테이블
+       df = get_emotion_report(username)
+       if df.empty:
+           st.info("분석된 데이터가 없습니다.")
+       else:
+           st.dataframe(df, use_container_width=True)
 
     # # ──────────────────────────────
     # # 3️⃣ 리포트 다운로드 탭 (기존 코드 유지)
