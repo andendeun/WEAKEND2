@@ -228,18 +228,24 @@ def show_main_page():
     # 2️⃣ 감정 리포트 탭 (기존 코드 유지)
     # ──────────────────────────────
     elif page == "감정 리포트":
-       st.title("📊 감정 분석 리포트")
+        st.title("📊 감정 분석 리포트")
 
-       # 1) 차트
-       fig = plot_emotion_trend(username)
-       st.pyplot(fig)
+        # 1) 리포트 데이터 가져오기
+        df = get_emotion_report(username)
+        st.write("▶ 디버그: get_emotion_report 리턴 행 수 =", len(df))
+        st.write(df.head())
 
-       # 2) 데이터 테이블
-       df = get_emotion_report(username)
-       if df.empty:
-           st.info("분석된 데이터가 없습니다.")
-       else:
-           st.dataframe(df, use_container_width=True)
+        # 2) 데이터 없으면 안내
+        if df.empty:
+            st.info("아직 분석된 데이터가 없습니다. 먼저 챗봇을 통해 대화를 입력해 주세요.")
+            return
+
+        # 3) 트렌드 차트
+        fig = plot_emotion_trend(username)
+        st.pyplot(fig)
+
+        # 4) 데이터 테이블
+        st.dataframe(df, use_container_width=True)
 
     # # ──────────────────────────────
     # # 3️⃣ 리포트 다운로드 탭 (기존 코드 유지)
