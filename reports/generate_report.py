@@ -8,6 +8,10 @@ from reportlab.platypus import SimpleDocTemplate, Table, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 
 def get_emotion_report(login_id: str) -> pd.DataFrame:
+    """
+    login_id 로 users → chat_log → emotions 를 조회하여
+    DataFrame(컬럼: 분석 날짜, 감정 카테고리, 감정 확신도)으로 반환합니다.
+    """
     load_dotenv()
     url = os.getenv("SUPABASE_URL")
     key = os.getenv("SUPABASE_KEY")
@@ -41,9 +45,8 @@ def get_emotion_report(login_id: str) -> pd.DataFrame:
     if df.empty:
         return df
 
+    # 4) 날짜 및 카테고리명 매핑
     df["analysis_date"] = pd.to_datetime(df["analysis_date"]).dt.date
-
-    # 4) 중분류 이름 매핑
     cat = supabase.table("middle_categories") \
         .select("middle_category_id, middle_categoryname") \
         .execute().data or []
@@ -56,6 +59,10 @@ def get_emotion_report(login_id: str) -> pd.DataFrame:
     return df
 
 def create_pdf_report(login_id: str) -> bytes:
+    """
+    get_emotion_report() 결과를 표로 담아
+    reportlab 으로 PDF 를 생성, 바이트로 반환합니다.
+    """
     df = get_emotion_report(login_id)
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer)
@@ -67,8 +74,8 @@ def create_pdf_report(login_id: str) -> bytes:
 
     # 테이블 데이터
     data = [df.columns.tolist()] + df.values.tolist()
-    tbl = Table(data)
-    elements.append(tbl)
+    table = Table(data)
+    elements.append(table)
 
     doc.build(elements)
     return buffer.getvalue()
