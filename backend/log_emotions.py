@@ -1,11 +1,13 @@
-import os
 from datetime import date, datetime
-from supabase import create_client
-from dotenv import load_dotenv
 from inference import predict_emotion_with_score
 from backend.db import supabase, get_userid_by_login
 
 def log_emotion(login_id: str, role: str, message: str) -> None:
+    # 0) 로그인된 user_id 조회
+    user_id = get_userid_by_login(login_id)
+    if user_id is None:
+        raise ValueError(f"Unknown login_id: {login_id}")
+
     # 1) chat_log에는 user/bot 구분 없이 모두 저장
     chat_ins = supabase.table("chat_log").insert({
         "userid":       user_id,
