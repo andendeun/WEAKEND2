@@ -198,7 +198,10 @@ def show_main_page():
             bot_reply = generate_response(user_input)
             # 3) 챗봇 답변 저장 및 감정 분석
             log_emotion(st.session_state["username"], "bot", bot_reply)
-            
+            # 4) 세션에 대화 내역 쌓기 (화면 표시용)
+            st.session_state.chat_history.append(("user", user_input))
+            st.session_state.chat_history.append(("bot",  bot_reply))
+
         # 쌍 단위 최신순 말풍선 출력
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
 
