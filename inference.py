@@ -23,10 +23,14 @@ label_list = [
     "걱정/고민/긴장"
 ]
 
-def predict_emotion_from_text(text):
+
+def predict_emotion_with_score(text: str) -> tuple[str, float]:
+    """
+    문장의 가장 높은 클래스 라벨과 그 확률을 출력
+    """
     inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
     with torch.no_grad():
         outputs = model(**inputs)
-        probs = F.softmax(outputs.logits, dim=1)
-        pred_idx = torch.argmax(probs).item()
-    return label_list[pred_idx]
+        probs = F.softmax(outputs.logits, dim=1)[0] 
+        score, idx = torch.max(probs, dim=0)
+    return label_list[idx.item()], score.item()
