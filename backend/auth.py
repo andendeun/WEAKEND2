@@ -22,9 +22,8 @@ def register(login_id, password, birthdate, region_id, phonenumber, gender):
             "region_id": region_id,
             "phonenumber": phonenumber,
             "gender": gender,
-            "last_activity": datetime.now().isoformat()
-            "signup_date": datetime.today().isoformat(), 
             "last_activity": datetime.now().isoformat(),
+            "signup_date": datetime.today().isoformat(),
             "role": "user"              
         }).execute()
 
