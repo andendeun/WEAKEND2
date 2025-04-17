@@ -23,31 +23,29 @@ chat_history: list[ChatCompletionMessageParam] = [
 ]
 
 def generate_response(login_id: str, user_input: str) -> str:
-    # 1) user 메시지 DB 저장
+    # 1) DB에 사용자 메시지 저장
     save_message(login_id, "user", user_input)
 
-    # 2) chat_history에 추가
+    # 2) 메모리 히스토리에 추가
     chat_history.append({"role": "user", "content": user_input})
 
-    # ─── 토큰 폭발 방지: 최근 N턴만 남기기 ───
-    MAX_TURNS = 10            # 최근 10턴(=20 messages)만 보낼 겁니다
-    system = chat_history[0]   # 시스템 프롬프트
-    history = chat_history[1:] # 유저+어시스턴트 기록
-    # 마지막 MAX_TURNS * 2 메시지만
+    # ─── 토큰 폭주 방지: 최근 N턴만 유지 ───
+    MAX_TURNS = 10
+    system = chat_history[0]
+    history = chat_history[1:]
     trimmed = history[-MAX_TURNS*2:]
-    # 최종으로 보낼 메시지 리스트
     prompt_messages = [system] + trimmed
+    print(f"▶ prompt length: {len(prompt_messages)}, full history length: {len(chat_history)}")
     # ───────────────────────────────────────
 
-    # 3) OpenAI 호출: messages=prompt_messages 로 변경
+    # 3) OpenAI 호출 (여기만 prompt_messages 사용)
     response = client.chat.completions.create(
         model="gpt-3.5-turbo-16k",
-        messages=prompt_messages
+        messages=prompt_messages,
     )
 
-    # 4) 응답 후 저장 & 기록
+    # 4) 응답 처리 & DB 저장
     reply = response.choices[0].message.content
     chat_history.append({"role": "assistant", "content": reply})
     save_message(login_id, "bot", reply)
-
     return reply
