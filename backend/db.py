@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from supabase import create_client
 from dotenv import load_dotenv
+import streamlit as st
 
 
 load_dotenv()
