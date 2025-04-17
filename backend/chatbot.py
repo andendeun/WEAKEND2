@@ -26,20 +26,28 @@ def generate_response(login_id: str, user_input: str) -> str:
     # 1) user 메시지 DB 저장
     save_message(login_id, "user", user_input)
 
-    # 2) OpenAI 호출
+    # 2) 대화 기록에 추가
     chat_history.append({"role": "user", "content": user_input})
+
+    # ── 여기에 토큰／메시지 제한 로직을 넣습니다 ──
+    MAX_TURNS = 10  # 최대 10턴(=20 messages)만 보내기
+    system = chat_history[0]
+    history_only = chat_history[1:]  # 시스템 제외
+    # 최근 MAX_TURNS*2개의 메시지(유저+어시스턴트)만 남긴 뒤
+    trimmed = history_only[-MAX_TURNS*2 :]
+    # 다시 조합
+    prompt_messages = [system] + trimmed
+    # ───────────────────────────────────────────────
+
+    # 3) OpenAI 호출 (trimmed history)
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=chat_history
-     )
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=chat_history
+        model="gpt-3.5-turbo-16k",
+        messages=prompt_messages
     )
 
     reply = response.choices[0].message.content
     chat_history.append({"role": "assistant", "content": reply})
 
-    # 3) bot 답변 DB 저장
+    # 4) bot 답변 DB 저장
     save_message(login_id, "bot", reply)
     return reply
