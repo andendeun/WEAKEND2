@@ -6,8 +6,8 @@ import re
 import datetime as date
 from backend.auth import register, login
 from backend.chatbot import generate_response
-from reports.generate_report import generate_html_report
-from reports.emotion_trend_plot import plot_emotion_trend
+# from reports.generate_report import generate_html_report
+# from reports.emotion_trend_plot import plot_emotion_trend
 from backend.db import get_region_list
 from backend.log_emotions import log_emotion
 
@@ -228,28 +228,28 @@ def show_main_page():
         st.markdown('</div>', unsafe_allow_html=True)
 
 
-    # ──────────────────────────────
-    # 2️⃣ 감정 리포트 탭 (기존 코드 유지)
-    # ──────────────────────────────
-    elif page == "감정 리포트":
-        st.title("📈 감정 변화 리포트")
-        fig = plot_emotion_trend(username)
-        st.pyplot(fig)
+    # # ──────────────────────────────
+    # # 2️⃣ 감정 리포트 탭 (기존 코드 유지)
+    # # ──────────────────────────────
+    # elif page == "감정 리포트":
+    #     st.title("📈 감정 변화 리포트")
+    #     fig = plot_emotion_trend(username)
+    #     st.pyplot(fig)
 
-    # ──────────────────────────────
-    # 3️⃣ 리포트 다운로드 탭 (기존 코드 유지)
-    # ──────────────────────────────
-    elif page == "리포트 다운로드":
-        st.title("📄 감정 리포트 PDF 다운로드")
-        if st.button("📥 PDF 저장하기"):
-            pdf_path = generate_html_report(username)
-            with open(pdf_path, "rb") as f:
-                st.download_button(
-                    label="📩 리포트 다운로드",
-                    data=f,
-                    file_name=f"{username}_감정리포트.pdf",
-                    mime="application/pdf"
-                )
+    # # ──────────────────────────────
+    # # 3️⃣ 리포트 다운로드 탭 (기존 코드 유지)
+    # # ──────────────────────────────
+    # elif page == "리포트 다운로드":
+    #     st.title("📄 감정 리포트 PDF 다운로드")
+    #     if st.button("📥 PDF 저장하기"):
+    #         pdf_path = generate_html_report(username)
+    #         with open(pdf_path, "rb") as f:
+    #             st.download_button(
+    #                 label="📩 리포트 다운로드",
+    #                 data=f,
+    #                 file_name=f"{username}_감정리포트.pdf",
+    #                 mime="application/pdf"
+    #             )
 
     # 로그아웃 버튼
     if st.sidebar.button("로그아웃"):
