@@ -1,5 +1,5 @@
 from backend.db import supabase
-from datetime import datetime
+from datetime import date
 
 
 def register(login_id, password, birthdate, region_id, phonenumber, gender):
@@ -22,7 +22,10 @@ def register(login_id, password, birthdate, region_id, phonenumber, gender):
             "region_id": region_id,
             "phonenumber": phonenumber,
             "gender": gender,
-            "last_activity": datetime.now().isoformat()
+            "last_activity": date.now().isoformat()
+            "signup_date": date.today().isoformat(), 
+            "last_activity": date.now().isoformat(),
+            "role": "user"              
         }).execute()
 
         return True, "회원가입이 완료되었습니다."
