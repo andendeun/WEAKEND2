@@ -36,3 +36,11 @@ def save_message(login_id: str, role: str, message: str, emotion: str = "") -> N
         "chat_content":  message,
         "chat_role":     role
     }).execute()
+
+def get_region_list():
+    """region 테이블에서 (region_name, region_id) 리스트 반환"""
+    res = supabase.table("region")\
+        .select("region_id", "region_name")\
+        .execute()
+    region_data = res.data or []
+    return [(r["region_name"], r["region_id"]) for r in region_data]
