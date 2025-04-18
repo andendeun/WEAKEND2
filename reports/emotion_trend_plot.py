@@ -10,18 +10,12 @@ font_dir = "./fonts"
 font_path = os.path.join(font_dir, "malgun.ttf")
 os.makedirs(font_dir, exist_ok=True)
 
-if not os.path.exists(font_path):
-    gdown.download(
-        "https://drive.google.com/uc?id=17YAJTJCyK1ZILSY2n1luosc-uHOCTp-b", 
-        font_path,
-        quiet=False
-    )
-
-# matplotlib에 적용
 if os.path.exists(font_path):
     fontprop = fm.FontProperties(fname=font_path)
     plt.rcParams["font.family"] = fontprop.get_name()
     plt.rcParams["axes.unicode_minus"] = False
+else:
+    fontprop = None  # fallback
 
 def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure:
     df = get_emotion_report(login_id)
@@ -31,9 +25,13 @@ def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure:
               .size().unstack(fill_value=0)
 
     fig, ax = plt.subplots()
-    pivot.plot(ax=ax)
-    ax.set_title("감정별 일별 발화 빈도")
-    ax.set_xlabel("날짜")
-    ax.set_ylabel("건수")
+    if fontprop:
+        pivot.plot(ax=ax, fontproperties=fontprop)
+    else:
+        pivot.plot(ax=ax)
+
+    ax.set_title("감정별 일별 발화 빈도", fontproperties=fontprop)
+    ax.set_xlabel("날짜", fontproperties=fontprop)
+    ax.set_ylabel("건수", fontproperties=fontprop)
     plt.tight_layout()
     return fig
