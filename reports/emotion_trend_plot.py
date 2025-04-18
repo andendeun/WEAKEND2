@@ -16,25 +16,18 @@ if os.path.exists(font_path):
 else:
     fontprop = None
 
-label_list = [
-    "행복/기쁨/감사",
-    "신뢰/편안/존경/안정",
-    "분노/짜증/불편",
-    "당황/충격/배신감",
-    "공포/불안",
-    "고독/외로움/소외감/허탈",
-    "죄책감/미안함",
-    "걱정/고민/긴장"
-]
-
-
 def plot_emotion_trend(
     login_id: str,
     start_date,
     end_date,
     period: str = "일별"
 ) -> plt.Figure | None:
-    df = get_emotion_report(login_id)
+    # — 0) 리포트 전체 불러와서, 가능한 모든 카테고리 목록 추출
+    full_df = get_emotion_report(login_id)
+    all_categories = sorted(full_df["감정 카테고리"].unique())
+
+    # — 1) 날짜 필터링
+    df = full_df.copy()
     df["분석 날짜"] = pd.to_datetime(df["분석 날짜"])
     mask = (
         (df["분석 날짜"].dt.date >= start_date) &
@@ -44,58 +37,60 @@ def plot_emotion_trend(
     if df.empty:
         return None
 
-    # 리샘플링 주기 설정
-    freq = {"일별": "D", "주별": "W-MON", "월별": "M"}[period]
+    # — 2) 리샘플링 주기 결정
+    freq = {"일별":"D", "주별":"W-MON", "월별":"M"}[period]
 
-    # 그룹화 & 건수 계산
+    # — 3) 그룹화 → 건수 계산
     df = df.set_index("분석 날짜")
     grp = df.groupby([pd.Grouper(freq=freq), "감정 카테고리"]).size()
     emotion_per_period = grp.reset_index(name="건수")
-    total_per_period = (
+    total = (
         emotion_per_period
         .groupby("분석 날짜")["건수"]
         .sum()
         .reset_index(name="총합")
     )
-    merged = pd.merge(emotion_per_period, total_per_period, on="분석 날짜")
+    merged = pd.merge(emotion_per_period, total, on="분석 날짜")
     merged["비율"] = merged["건수"] / merged["총합"] * 100
 
-    # 피벗 & 없는 라벨은 0으로 채우기
+    # — 4) 피벗 & 없는 카테고리는 0으로 채움
     pivot = (
         merged
         .pivot(index="분석 날짜", columns="감정 카테고리", values="비율")
-        .reindex(columns=label_list, fill_value=0)
+        .reindex(columns=all_categories, fill_value=0)
     )
 
-    fig, ax = plt.subplots(figsize=(6, 5))
+    # — 5) 플롯
+    fig, ax = plt.subplots(figsize=(6,5))
     pivot.plot(ax=ax, legend=False)
 
-    # 레전드 항상 8개 표시
+    # — 6) 동적 범례
     props = dict(
         loc="upper center",
         bbox_to_anchor=(0.5, -0.15),
-        ncol=len(label_list),
+        ncol=len(all_categories),
         frameon=False
     )
     if fontprop:
-        ax.legend(label_list, prop=fontprop, **props)
+        ax.legend(all_categories, prop=fontprop, **props)
     else:
-        ax.legend(label_list, **props)
+        ax.legend(all_categories, **props)
 
-    # x축 포맷
-    fmt = {"일별": "%m/%d", "주별": "%y-%m-%d", "월별": "%Y-%m"}[period]
+    # — 7) x축 포맷
+    fmt = {"일별":"%m/%d","주별":"%y-%m-%d","월별":"%Y-%m"}[period]
     ax.set_xticks(pivot.index)
     ax.set_xticklabels([d.strftime(fmt) for d in pivot.index], rotation=0)
 
-    # y축 및 (%) 표시
-    ax.set_yticks(range(0, 101, 20))
-    ax.set_ylim(0, 100)
+    # — 8) y축, (%) 표시
+    ax.set_yticks(range(0,101,20))
+    ax.set_ylim(0,100)
     ax.annotate(
         "(%)",
-        xy=(0.01, 1.02),
+        xy=(0.01,1.02),
         xycoords="axes fraction",
-        ha="left",
-        va="bottom"
+        ha="left", va="bottom",
+        fontsize=12,
+        fontproperties=(fontprop if fontprop else None)
     )
 
     plt.tight_layout(pad=2.0)
