@@ -238,18 +238,44 @@ def show_main_page():
         st.title("📊 감정 변화 트렌드")
 
         # — 1) 조회 기간
+        # report_df = get_emotion_report(username)
+        # report_df["분석 날짜"] = pd.to_datetime(report_df["분석 날짜"]).dt.date
+        # min_date = report_df["분석 날짜"].min()
+        # max_date = report_df["분석 날짜"].max()
+
+        # start_date, end_date = st.date_input(
+        #     "조회 기간",                 # 첫 번째 인자는 레이블
+        #     [min_date, max_date],       # 리스트 형태로 범위 지정
+        #     min_value=min_date,
+        #     max_value=max_date,
+        #     key="date_range"             # key만 붙여주세요
+        # )
+
+
         report_df = get_emotion_report(username)
         report_df["분석 날짜"] = pd.to_datetime(report_df["분석 날짜"]).dt.date
         min_date = report_df["분석 날짜"].min()
         max_date = report_df["분석 날짜"].max()
 
-        start_date, end_date = st.date_input(
-            "조회 기간",                 # 첫 번째 인자는 레이블
-            [min_date, max_date],       # 리스트 형태로 범위 지정
-            min_value=min_date,
-            max_value=max_date,
-            key="date_range"             # key만 붙여주세요
-        )
+        col1, col2 = st.columns(2)
+        with col1:
+            start_date = st.date_input(
+                "시작일",
+                value=min_date,
+                min_value=min_date,
+                max_value=max_date,
+                format="%Y-%m-%d",    # strftime 포맷
+                key="start_date"
+            )
+        with col2:
+            end_date = st.date_input(
+                "종료일",
+                value=max_date,
+                min_value=min_date,
+                max_value=max_date,
+                format="%Y-%m-%d",    # strftime 포맷
+                key="end_date"
+            )
 
         # — 2) 집계 단위
         period = st.radio(
