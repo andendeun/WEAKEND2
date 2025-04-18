@@ -37,7 +37,7 @@ def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure | None
     if pivot.empty:
         return None
 
-    fig, ax = plt.subplots(figsize=(6, 4))
+    fig, ax = plt.subplots(figsize=(6, 5))
     pivot.plot(ax=ax)
 
     # 제목 및 라벨 (한글 폰트 적용)
