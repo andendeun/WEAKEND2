@@ -242,14 +242,16 @@ def show_main_page():
         report_df["분석 날짜"] = pd.to_datetime(report_df["분석 날짜"]).dt.date
         min_date = report_df["분석 날짜"].min()
         max_date = report_df["분석 날짜"].max()
+
+        # 튜플이 아니라 리스트로 기본값 지정
         start_date, end_date = st.date_input(
             "조회 기간",
-            value=(min_date, max_date),
+            [min_date, max_date],    # ← 리스트로 변경
             min_value=min_date,
             max_value=max_date,
             format="YYYY-%m-%d"
         )
-
+        
         # — 2) 집계 단위
         period = st.radio(
             "집계 단위",
