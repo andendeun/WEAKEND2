@@ -245,11 +245,12 @@ def show_main_page():
 
         # 튜플이 아니라 리스트로 기본값 지정
         start_date, end_date = st.date_input(
-            "조회 기간",
-            [min_date, max_date],    # ← 리스트로 변경
-            min_value=min_date,
-            max_value=max_date,
-            format="YYYY-%m-%d"
+         label="조회 기간",
+         value=[min_date, max_date],     # 반드시 리스트 형태
+         min_value=min_date,
+         max_value=max_date,
+         format="%Y-%m-%d",              # strftime 형식으로 변경
+         key="date_range"                # 중복 방지를 위해 key 추가
         )
         
         # — 2) 집계 단위
