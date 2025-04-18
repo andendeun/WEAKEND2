@@ -4,41 +4,68 @@ from .generate_report import get_emotion_report
 import os
 import matplotlib.font_manager as fm
 
-# 폰트 다운로드 및 설정
+# 한글폰트 설정
 font_dir = "./fonts"
 font_path = os.path.join(font_dir, "malgun.ttf")
 os.makedirs(font_dir, exist_ok=True)
-
 if os.path.exists(font_path):
     fontprop = fm.FontProperties(fname=font_path)
     plt.rcParams["font.family"] = fontprop.get_name()
     plt.rcParams["axes.unicode_minus"] = False
 else:
-    fontprop = None 
+    fontprop = None
 
 
-def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure | None:
+
+def plot_emotion_trend(
+    login_id: str,
+    start_date,
+    end_date,
+    period: str = "일별"   # "일별", "주별", "월별"
+) -> plt.Figure | None:
     df = get_emotion_report(login_id)
-    df["분석 날짜"] = pd.to_datetime(df["분석 날짜"]).dt.date
-    df = df[(df["분석 날짜"] >= start_date) & (df["분석 날짜"] <= end_date)]
-
+    df["분석 날짜"] = pd.to_datetime(df["분석 날짜"])
+    mask = (
+        (df["분석 날짜"].dt.date >= start_date) &
+        (df["분석 날짜"].dt.date <= end_date)
+    )
+    df = df.loc[mask]
     if df.empty:
         return None
 
-    # 날짜별 감정 비율 계산
-    total_per_day = df.groupby("분석 날짜").size().reset_index(name="총합")
-    emotion_per_day = df.groupby(["분석 날짜", "감정 카테고리"]).size().reset_index(name="건수")
+    # 리샘플링 주기 설정
+    if period == "주별":
+        freq = "W-MON"
+    elif period == "월별":
+        freq = "M"
+    else:
+        freq = "D"
 
-    merged = pd.merge(emotion_per_day, total_per_day, on="분석 날짜")
-    merged["비율"] = (merged["건수"] / merged["총합"]) * 100
+    # 그룹화하여 건수 계산
+    df = df.set_index("분석 날짜")
+    grp = df.groupby([pd.Grouper(freq=freq), "감정 카테고리"]).size()
+    emotion_per_period = grp.reset_index(name="건수")
+    total_per_period = (
+        emotion_per_period
+        .groupby("분석 날짜")["건수"]
+        .sum()
+        .reset_index(name="총합")
+    )
+    merged = pd.merge(emotion_per_period, total_per_period, on="분석 날짜")
+    merged["비율"] = merged["건수"] / merged["총합"] * 100
 
-    pivot = merged.pivot(index="분석 날짜", columns="감정 카테고리", values="비율").fillna(0)
-
+    pivot = merged.pivot(
+        index="분석 날짜",
+        columns="감정 카테고리",
+        values="비율"
+    ).fillna(0)
     if pivot.empty:
         return None
 
+
     fig, ax = plt.subplots(figsize=(6, 5))
     pivot.plot(ax=ax)
+
 
     # 제목 및 라벨 (한글 폰트 적용)
     if fontprop:

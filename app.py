@@ -236,18 +236,32 @@ def show_main_page():
         # ──────────────────────────────
     elif page == "감정 리포트":
         st.title("📊 감정 변화 트렌드")
+        
+        # 기간 선택
         start_date, end_date = st.date_input(
             "조회 기간",
-            [get_emotion_report(username)["분석 날짜"].min(),
-            get_emotion_report(username)["분석 날짜"].max()]
+            [
+                get_emotion_report(username)["분석 날짜"].min(),
+                get_emotion_report(username)["분석 날짜"].max()
+            ]
         )
-        fig = plot_emotion_trend(username, start_date, end_date)
+
+        # 집계 단위 선택
+        period = st.selectbox(
+            "집계 단위",
+            ["일별", "주별", "월별"],
+            index=0,
+            help="데이터를 일별/주별/월별로 묶어서 보여줍니다."
+        )
+
+        # 그래프 그리기
+        fig = plot_emotion_trend(username, start_date, end_date, period)
         if fig is not None:
             st.pyplot(fig)
         else:
             st.warning("선택한 기간에는 감정 데이터가 없습니다.")
 
-        # ↳ 다운로드 버튼은 같은 블록 안에 삽입
+        # PDF 다운로드 버튼
         pdf_bytes = create_pdf_report(username)
         st.download_button(
             label="📥 리포트 PDF 다운로드",
@@ -255,7 +269,6 @@ def show_main_page():
             file_name=f"{username}_감정리포트_{date.today()}.pdf",
             mime="application/pdf"
         )
-
 
     # ──────────────────────────────
     # 3️⃣ 맞춤형 컨텐츠 추천
