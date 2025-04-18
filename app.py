@@ -260,20 +260,18 @@ def show_main_page():
         col1, col2 = st.columns(2)
         with col1:
             start_date = st.date_input(
-                "시작일",
+                label="시작일",
                 value=min_date,
                 min_value=min_date,
                 max_value=max_date,
-                format="%Y-%m-%d",    # strftime 포맷
                 key="start_date"
             )
         with col2:
             end_date = st.date_input(
-                "종료일",
+                label="종료일",
                 value=max_date,
                 min_value=min_date,
                 max_value=max_date,
-                format="%Y-%m-%d",    # strftime 포맷
                 key="end_date"
             )
 
