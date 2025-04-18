@@ -282,8 +282,7 @@ if not st.session_state["logged_in"]:
     st.session_state["username"] = "test002"   
     st.session_state["password"] = "test002"  
     st.session_state["logged_in"] = True        # 테스트용 모드
-
-    # show_login_page()        # 실제 배포 시
+    show_login_page()        # 실제 배포 시 이것만
 
 else:
     # 로그인 성공 상태 => 메인 페이지
