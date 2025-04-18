@@ -69,6 +69,6 @@ def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure | None
         fontsize=12,
         fontproperties=fontprop
         )
-     plt.tight_layout(pad=2.0)   
+    plt.tight_layout(pad=2.0)   
     return fig
 
