@@ -164,7 +164,13 @@ def show_login_page():
 #    (기존 3개 탭: 내 감정 입력하기, 감정 리포트, 리포트 다운로드)
 # ─────────────────────────────────────────────────────────────────────────────
 def show_main_page():
-    page = st.sidebar.radio("탭 선택", ["내 감정 입력하기", "감정 리포트", "맞춤형 컨텐츠 추천"])
+    if "active_page" not in st.session_state:
+        st.session_state["active_page"] = "내 감정 입력하기"
+    page = st.sidebar.radio(
+        "탭 선택",
+        ["내 감정 입력하기", "감정 리포트", "맞춤형 컨텐츠 추천"],
+        index=["내 감정 입력하기", "감정 리포트", "맞춤형 컨텐츠 추천"].index(st.session_state["active_page"])
+    )
     username = st.session_state["username"]
 
     # ──────────────────────────────
@@ -286,6 +292,7 @@ if not st.session_state["logged_in"]:
     st.session_state["username"] = "test002"
     st.session_state["password"] = "test002"
     st.session_state["logged_in"] = True
+    st.session_state["active_page"] = "감정 리포트"   # 메인으로 볼 거 설정
 
 st.write("로그인된 사용자:", st.session_state.get("username"))
 show_main_page()
