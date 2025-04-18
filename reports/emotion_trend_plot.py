@@ -71,7 +71,7 @@ def plot_emotion_trend(
     pivot.plot(ax=ax, legend=False)
 
     # 범례
-    num_cols = 4  # 한 행
+    num_cols = 2  # 한 행
     props = dict(
         loc="upper center",
         bbox_to_anchor=(0.5, -0.15),
