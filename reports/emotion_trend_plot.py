@@ -42,12 +42,18 @@ def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure | None
 
     # 제목 및 라벨 (한글 폰트 적용)
     if fontprop:
-        ax.set_xlabel("날짜", fontproperties=fontprop)
-        ax.set_ylabel("비율 (%)", fontproperties=fontprop)
+        ax.set_xlabel("", fontproperties=fontprop)
+        ax.set_ylabel("", fontproperties=fontprop)
+        ax.text(
+            x=0, y=105, s="(%)",
+            fontsize=12,
+            ha='left', va='bottom',
+            fontproperties=fontprop if fontprop else None
+        )
         ax.legend(title="감정", prop=fontprop)
     else:
         ax.set_xlabel("날짜")
-        ax.set_ylabel("비율 (%)")
+        ax.set_ylabel("")
 
     # x축 포맷 MM/DD로
     ax.set_xticklabels([d.strftime("%m/%d") for d in pivot.index])
@@ -56,6 +62,5 @@ def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure | None
     ax.set_yticks(range(0, 101, 20))
     ax.set_ylim(0, 100)
 
-    plt.xticks(rotation=360)
     plt.tight_layout()
     return fig
