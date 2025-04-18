@@ -44,11 +44,14 @@ def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure | None
     if fontprop:
         ax.set_xlabel("", fontproperties=fontprop)
         ax.set_ylabel("", fontproperties=fontprop)
-        ax.text(
-            x=0, y=105, s="(%)",
+        ax.annotate(
+            "(%)",
+            xy=(1.02, 1.01),
+            xycoords="axes fraction",
+            ha="left",
+            va="bottom",
             fontsize=12,
-            ha='left', va='bottom',
-            fontproperties=fontprop if fontprop else None
+            fontproperties=fontprop
         )
         ax.legend(title="감정", prop=fontprop)
     else:
