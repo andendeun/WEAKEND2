@@ -25,13 +25,18 @@ def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure:
               .size().unstack(fill_value=0)
 
     fig, ax = plt.subplots()
-    if fontprop:
-        pivot.plot(ax=ax, fontproperties=fontprop)
-    else:
-        pivot.plot(ax=ax)
+    pivot.plot(ax=ax)  # ✅ 여기에는 fontproperties 넘기지 않음
 
-    ax.set_title("감정별 일별 발화 빈도", fontproperties=fontprop)
-    ax.set_xlabel("날짜", fontproperties=fontprop)
-    ax.set_ylabel("건수", fontproperties=fontprop)
+    # 👇 여기에만 폰트 적용
+    if fontprop:
+        ax.set_title("감정별 일별 발화 빈도", fontproperties=fontprop)
+        ax.set_xlabel("날짜", fontproperties=fontprop)
+        ax.set_ylabel("건수", fontproperties=fontprop)
+        ax.legend(title="감정", prop=fontprop)
+    else:
+        ax.set_title("감정별 일별 발화 빈도")
+        ax.set_xlabel("날짜")
+        ax.set_ylabel("건수")
+
     plt.tight_layout()
     return fig
