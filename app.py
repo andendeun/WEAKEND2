@@ -237,20 +237,20 @@ def show_main_page():
     elif page == "감정 리포트":
         st.title("📊 감정 변화 트렌드")
 
-        # — 1) 조회 기간: date_input 대신 슬라이더
+        # — 1) 조회 기간
         report_df = get_emotion_report(username)
         report_df["분석 날짜"] = pd.to_datetime(report_df["분석 날짜"]).dt.date
         min_date = report_df["분석 날짜"].min()
         max_date = report_df["분석 날짜"].max()
-        start_date, end_date = st.slider(
+        start_date, end_date = st.date_input(
             "조회 기간",
+            value=(min_date, max_date),
             min_value=min_date,
             max_value=max_date,
-            value=(min_date, max_date),
             format="YYYY-%m-%d"
         )
 
-        # — 2) 집계 단위: 가로형 라디오 버튼
+        # — 2) 집계 단위
         period = st.radio(
             "집계 단위",
             ["일별", "주별", "월별"],
