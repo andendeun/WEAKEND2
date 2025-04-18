@@ -56,6 +56,6 @@ def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure | None
     ax.set_yticks(range(0, 101, 20))
     ax.set_ylim(0, 100)
 
-    plt.xticks(rotation=180)
+    plt.xticks(rotation=360)
     plt.tight_layout()
     return fig
