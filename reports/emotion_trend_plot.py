@@ -37,13 +37,14 @@ def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure | None
     if pivot.empty:
         return None
 
-    fig, ax = plt.subplots(figsize=(6, 8))
+    fig, ax = plt.subplots(figsize=(6, 6))
     pivot.plot(ax=ax)
 
     # 제목 및 라벨 (한글 폰트 적용)
     if fontprop:
+        ax.set_xlabel("날짜", fontproperties=fontprop)
         ax.set_ylabel("비율 (%)", fontproperties=fontprop)
-        ax.legend(prop=fontprop)
+        ax.legend(title="감정", prop=fontprop)
     else:
         ax.set_ylabel("비율 (%)")
 
@@ -54,6 +55,6 @@ def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure | None
     ax.set_yticks(range(0, 101, 20))
     ax.set_ylim(0, 100)
 
-    plt.xticks(rotation=90)
+    plt.xticks(rotation=0)
     plt.tight_layout()
     return fig
