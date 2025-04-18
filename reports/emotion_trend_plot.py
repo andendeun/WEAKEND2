@@ -67,7 +67,7 @@ def plot_emotion_trend(
         .reindex(columns=label_list, fill_value=0)
     )
 
-    fig, ax = plt.subplots(figsize=(6, 5))
+    fig, ax = plt.subplots(figsize=(6, 9))
     pivot.plot(ax=ax, legend=False)
 
     # 범례
