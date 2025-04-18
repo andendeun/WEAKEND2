@@ -236,7 +236,10 @@ def show_main_page():
             get_emotion_report(username)["분석 날짜"].max()]
         )
         fig = plot_emotion_trend(username, start_date, end_date)
-        st.pyplot(fig)
+        if fig is not None:
+            st.pyplot(fig)
+        else:
+            st.warning("선택한 기간에는 감정 데이터가 없습니다.")
 
         # ↳ 다운로드 버튼은 같은 블록 안에 삽입
         pdf_bytes = create_pdf_report(username)

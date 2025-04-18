@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from .generate_report import get_emotion_report
 import os
-import gdown
 import matplotlib.font_manager as fm
 
 # 폰트 다운로드 및 설정
@@ -15,24 +14,31 @@ if os.path.exists(font_path):
     plt.rcParams["font.family"] = fontprop.get_name()
     plt.rcParams["axes.unicode_minus"] = False
 else:
-    fontprop = None  # fallback
+    fontprop = None 
 
-def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure:
+
+def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure | None:
     df = get_emotion_report(login_id)
     df["분석 날짜"] = pd.to_datetime(df["분석 날짜"]).dt.date
     df = df[(df["분석 날짜"] >= start_date) & (df["분석 날짜"] <= end_date)]
+
+    if df.empty:
+        return None  # 👉 빈 데이터면 None 리턴
+
     pivot = df.groupby(["분석 날짜", "감정 카테고리"]) \
               .size().unstack(fill_value=0)
 
     fig, ax = plt.subplots()
-    pivot.plot(ax=ax)  # ✅ 여기에는 fontproperties 넘기지 않음
 
-    # 👇 여기에만 폰트 적용
+    if pivot.empty:
+        return None  # 👉 unstack 결과도 비어 있으면 None 리턴
+
+    pivot.plot(ax=ax)
+
     if fontprop:
         ax.set_title("감정별 일별 발화 빈도", fontproperties=fontprop)
         ax.set_xlabel("날짜", fontproperties=fontprop)
         ax.set_ylabel("건수", fontproperties=fontprop)
-        ax.legend(title="감정", prop=fontprop)
     else:
         ax.set_title("감정별 일별 발화 빈도")
         ax.set_xlabel("날짜")
