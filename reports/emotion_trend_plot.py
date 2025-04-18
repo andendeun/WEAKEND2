@@ -23,35 +23,41 @@ def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure | None
     df = df[(df["분석 날짜"] >= start_date) & (df["분석 날짜"] <= end_date)]
 
     if df.empty:
-        return None  # 👉 빈 데이터면 None 리턴
+        return None
 
-    pivot = df.groupby(["분석 날짜", "감정 카테고리"]) \
-              .size().unstack(fill_value=0)
+    # 날짜별 감정 비율 계산
+    total_per_day = df.groupby("분석 날짜").size().reset_index(name="총합")
+    emotion_per_day = df.groupby(["분석 날짜", "감정 카테고리"]).size().reset_index(name="건수")
 
-    fig, ax = plt.subplots()
+    merged = pd.merge(emotion_per_day, total_per_day, on="분석 날짜")
+    merged["비율"] = (merged["건수"] / merged["총합"]) * 100
+
+    pivot = merged.pivot(index="분석 날짜", columns="감정 카테고리", values="비율").fillna(0)
 
     if pivot.empty:
-        return None  # 👉 unstack 결과도 비어 있으면 None 리턴
+        return None
 
+    fig, ax = plt.subplots(figsize=(6, 4))
     pivot.plot(ax=ax)
 
+    # 제목 및 라벨 (한글 폰트 적용)
     if fontprop:
-        ax.set_title("감정별 일별 발화 빈도", fontproperties=fontprop)
+        ax.set_title("감정별 일별 발화 비율 (%)", fontproperties=fontprop)
         ax.set_xlabel("날짜", fontproperties=fontprop)
-        ax.set_ylabel("건수", fontproperties=fontprop)
-        ax.legend(title="감정 카테고리", title_fontproperties=fontprop)
-        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: pd.to_datetime(x).strftime("%Y-%m-%d")))
-        ax.xaxis.set_major_locator(plt.MaxNLocator(nbins=10, integer=True))
-        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha="right", fontproperties=fontprop)
-        plt.setp(ax.xaxis.get_minorticklabels(), rotation=45, ha="right", fontproperties=fontprop)
-        plt.setp(ax.get_xticklabels(), rotation=45, ha="right", fontproperties=fontprop)
-        plt.setp(ax.get_yticklabels(), fontproperties=fontprop)
-        plt.setp(ax.get_xticklabels(), fontproperties=fontprop)
-        plt.setp(ax.get_yticklabels(), fontproperties=fontprop)
+        ax.set_ylabel("비율 (%)", fontproperties=fontprop)
+        ax.legend(title="감정", prop=fontprop)
     else:
-        ax.set_title("감정별 일별 발화 빈도")
+        ax.set_title("감정별 일별 발화 비율 (%)")
         ax.set_xlabel("날짜")
-        ax.set_ylabel("건수")
+        ax.set_ylabel("비율 (%)")
 
+    # x축 포맷 MM/DD로
+    ax.set_xticklabels([d.strftime("%m/%d") for d in pivot.index])
+
+    # y축 0~100, 20단위로
+    ax.set_yticks(range(0, 101, 20))
+    ax.set_ylim(0, 100)
+
+    plt.xticks(rotation=45)
     plt.tight_layout()
     return fig
