@@ -69,6 +69,14 @@ def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure | None
         fontsize=12,
         fontproperties=fontprop
         )
+    
+    ax.legend(
+    loc='upper center',
+    bbox_to_anchor=(0.5, -0.15),  # x=가운데, y=아래로 약간 내리기
+    ncol=len(pivot.columns),      # 감정 카테고리 수만큼 가로 정렬
+    frameon=False,                # 테두리 제거 (선택)
+    prop=fontprop if fontprop else None
+)
     plt.tight_layout(pad=2.0)   
     return fig
 
