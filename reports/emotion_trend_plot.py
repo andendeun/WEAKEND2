@@ -44,26 +44,31 @@ def plot_emotion_trend(login_id: str, start_date, end_date) -> plt.Figure | None
     if fontprop:
         ax.set_xlabel("", fontproperties=fontprop)
         ax.set_ylabel("", fontproperties=fontprop)
-        ax.annotate(
-            "(%)",
-            xy=(1.02, 1.01),
-            xycoords="axes fraction",
-            ha="left",
-            va="bottom",
-            fontsize=12,
-            fontproperties=fontprop
-        )
-        ax.legend(title="감정", prop=fontprop)
+        ax.legend(title="", prop=fontprop)
     else:
         ax.set_xlabel("날짜")
         ax.set_ylabel("")
 
     # x축 포맷 MM/DD로
-    ax.set_xticklabels([d.strftime("%m/%d") for d in pivot.index])
+    ax.set_xticks(pivot.index)
+    ax.set_xticklabels(
+        [d.strftime("%m/%d") for d in pivot.index],
+        rotation=0,
+        fontproperties=fontprop if fontprop else None
+    )
 
     # y축 0~100, 20단위로
-    ax.set_yticks(range(0, 101, 20))
+    ax.set_yticks(range(0, 105, 20))
     ax.set_ylim(0, 100)
-
-    plt.tight_layout()
+    ax.annotate(
+        "(%)",
+        xy=(0.01, 1.02),
+        xycoords="axes fraction",
+        ha="left",
+        va="bottom",
+        fontsize=12,
+        fontproperties=fontprop
+        )
+     plt.tight_layout(pad=2.0)   
     return fig
+
