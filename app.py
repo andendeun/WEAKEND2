@@ -254,6 +254,14 @@ def show_main_page():
     # ──────────────────────────────
     # 3️⃣ 맞춤형 컨텐츠 추천
     # ──────────────────────────────
+    elif page == "맞춤형 컨텐츠 추천":
+        st.title("맞춤형 컨텐츠 추천")
+
+
+
+
+
+
 
 
 
@@ -271,8 +279,11 @@ def show_main_page():
 # ─────────────────────────────────────────────────────────────────────────────
 if not st.session_state["logged_in"]:
     # 로그인 안 된 상태 => 로그인 페이지
-    st.session_state["username"] = "test002"     # 테스트용 모드
+    st.session_state["username"] = "test002"     
+    st.session_state["logged_in"] = True        # 테스트용 모드
+
     # show_login_page()        # 실제 배포 시
+    
 else:
     # 로그인 성공 상태 => 메인 페이지
     show_main_page()
