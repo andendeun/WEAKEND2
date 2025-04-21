@@ -328,25 +328,25 @@ def show_main_page():
 # 3) 최종 실행 로직
 # ─────────────────────────────────────────────────────────────────────────────
 
-# TEST용 로그인 모드
-if "logged_in" not in st.session_state:
-    st.session_state["logged_in"] = False
-
-if not st.session_state["logged_in"]:
-    st.session_state["username"] = "test002"
-    st.session_state["password"] = "test002"
-    st.session_state["logged_in"] = True
-    st.session_state["active_page"] = "감정 리포트"   # 메인으로 볼 거 설정
-
-st.write("로그인된 사용자:", st.session_state.get("username"))
-show_main_page()
-
-
-# # 배포 시
+# # TEST용 로그인 모드
 # if "logged_in" not in st.session_state:
 #     st.session_state["logged_in"] = False
 
 # if not st.session_state["logged_in"]:
-#     show_login_page()
-# else:
-#     show_main_page()
+#     st.session_state["username"] = "test002"
+#     st.session_state["password"] = "test002"
+#     st.session_state["logged_in"] = True
+#     st.session_state["active_page"] = "감정 리포트"   # 메인으로 볼 거 설정
+
+# st.write("로그인된 사용자:", st.session_state.get("username"))
+# show_main_page()
+
+
+# 배포 시
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+
+if not st.session_state["logged_in"]:
+    show_login_page()
+else:
+    show_main_page()
