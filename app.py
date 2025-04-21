@@ -20,7 +20,7 @@ st.set_page_config(page_title="WEAKEND 감정 챗봇", layout="centered")
 st.markdown("""
     <style>
         .block-container {
-            max-width: 450px;
+            max-width: 360px;
             height: 640px;         /* 세로 고정 */
             overflow-y: auto;      /* 내부 스크롤 */
             margin: 40px auto;
