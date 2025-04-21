@@ -83,7 +83,7 @@ def login_page():
             st.error("아이디 또는 비밀번호가 일치하지 않습니다.")
 
     st.markdown("---")
-    if st.button("📝 회원가입"):
+    if st.button("회원가입"):
         st.session_state.page = "signup"
 
 
@@ -118,7 +118,7 @@ def signup_page():
                 gender=gender
             )
             if success:
-                st.success("회원가입 완료! 로그인 페이지로 이동합니다.")
+                st.success("회원가입 완료!")
                 st.session_state.page = "login"
             else:
                 st.error(msg)
