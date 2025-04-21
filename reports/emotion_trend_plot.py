@@ -1,9 +1,7 @@
 import os
 import pandas as pd
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
-from .generate_report import get_emotion_report
 
 # ────────────────────────────────────────────────────────────────────────────────
 # 1) (Colab 전용) Google Drive 마운트
@@ -20,15 +18,18 @@ if DRIVE_MOUNTED:
 else:
     FONT_PATH = os.path.join(os.path.dirname(__file__), 'fonts', 'malgun.ttf')
 
-# 3) Matplotlib에 한글폰트 등록
+# 3) Matplotlib에 한글폰트 등록 (pyplot import 전)
 if os.path.exists(FONT_PATH):
     fm.fontManager.addfont(FONT_PATH)
     FONT_NAME = fm.FontProperties(fname=FONT_PATH).get_name()
     mpl.rcParams['font.family'] = FONT_NAME
     mpl.rcParams['axes.unicode_minus'] = False
 else:
-    # 폰트가 없으면 기본 설정 유지
     print(f"[경고] 한글 폰트 파일을 찾을 수 없습니다: {FONT_PATH}")
+
+# pyplot은 폰트 설정 이후에 import
+import matplotlib.pyplot as plt
+from .generate_report import get_emotion_report
 
 # ────────────────────────────────────────────────────────────────────────────────
 # 감정 카테고리 순서 정의
@@ -109,7 +110,6 @@ def plot_emotion_trend(
         ncol=2,
         frameon=False
     )
-    # 폰트 프로퍼티 지정
     legend_font = fm.FontProperties(fname=FONT_PATH) if os.path.exists(FONT_PATH) else None
     ax.legend(LABEL_LIST, prop=legend_font, **legend_props)
 
