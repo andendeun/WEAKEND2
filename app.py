@@ -182,7 +182,7 @@ def main_page():
                   <div class="user-bubble">{u_msg[1]}</div>
                 </div>
                 <div class="chat-bubble">
-                  <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" width="24" />
+                  <img src="https://cdn-icons-png.flaticon.com/512/8229/8229494.png" width="24" />
                   <div class="bot-bubble">{b_msg[1]}</div>
                 </div>
             ''', unsafe_allow_html=True)
