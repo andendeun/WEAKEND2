@@ -1,20 +1,34 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-from .generate_report import get_emotion_report
 import os
+import pandas as pd
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
+from .generate_report import get_emotion_report
 
+# ────────────────────────────────────────────────────────────────────────────────
+# 1) (Colab 전용) Google Drive 마운트
+try:
+    from google.colab import drive
+    drive.mount('/content/drive', force_remount=True)
+    DRIVE_MOUNTED = True
+except ImportError:
+    DRIVE_MOUNTED = False
 
-# 한글폰트 설정
-font_dir = "./fonts"
-font_path = os.path.join(font_dir, "malgun.ttf")
-os.makedirs(font_dir, exist_ok=True)
-if os.path.exists(font_path):
-    fontprop = fm.FontProperties(fname=font_path)
-    plt.rcParams["font.family"] = fontprop.get_name()
-    plt.rcParams["axes.unicode_minus"] = False
+# 2) 폰트 경로 설정
+if DRIVE_MOUNTED:
+    FONT_PATH = '/content/drive/MyDrive/fonts/malgun.ttf'
 else:
-    fontprop = None
+    FONT_PATH = os.path.join(os.path.dirname(__file__), 'fonts', 'malgun.ttf')
+
+# 3) Matplotlib에 한글폰트 등록
+if os.path.exists(FONT_PATH):
+    fm.fontManager.addfont(FONT_PATH)
+    FONT_NAME = fm.FontProperties(fname=FONT_PATH).get_name()
+    mpl.rcParams['font.family'] = FONT_NAME
+    mpl.rcParams['axes.unicode_minus'] = False
+else:
+    # 폰트가 없으면 기본 설정 유지
+    print(f"[경고] 한글 폰트 파일을 찾을 수 없습니다: {FONT_PATH}")
 
 label_list = [
     "행복/기쁨/감사",
@@ -26,6 +40,8 @@ label_list = [
     "죄책감/미안함",
     "걱정/고민/긴장"
 ]
+
+
 
 def plot_emotion_trend(
     login_id: str,
