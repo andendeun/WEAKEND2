@@ -17,7 +17,6 @@ import streamlit as st
 # 0) 페이지 설정 & CSS
 # ─────────────────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="WEAKEND 감정 챗봇", layout="centered")
-
 st.markdown("""
     <style>
         .block-container {
@@ -57,7 +56,7 @@ st.markdown("""
 # 1) 세션 상태 초기화
 # ─────────────────────────────────────────────────────────────────────────────
 if "page" not in st.session_state:
-    st.session_state.page = "login"       # login, signup, main
+    st.session_state.page = "login"    # login, signup, main
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
@@ -80,7 +79,8 @@ def login_page():
         if login(user, passwd):
             st.session_state.logged_in = True
             st.session_state.username = user
-            st.success("로그인 성공! 🎉")
+            st.session_state.page = "main"          # 로그인 후 메인 페이지로 이동
+            st.success("로그인 성공! 메인 페이지로 이동합니다.")
         else:
             st.error("아이디 또는 비밀번호가 일치하지 않습니다.")
 
@@ -96,9 +96,7 @@ def signup_page():
     login_id = st.text_input("아이디")
     password = st.text_input("비밀번호", type="password")
     birthdate = st.date_input(
-        "생년월일",
-        min_value=date(1900, 1, 1),
-        max_value=date.today()
+        "생년월일", min_value=date(1900, 1, 1), max_value=date.today()
     )
 
     region_options = get_region_list()
@@ -133,7 +131,6 @@ def signup_page():
 
 
 def main_page():
-    # ─── 사이드바 탭
     if "active_page" not in st.session_state:
         st.session_state.active_page = "내 감정 입력하기"
 
@@ -230,10 +227,9 @@ def main_page():
 # ─────────────────────────────────────────────────────────────────────────────
 # 3) 라우팅: 로그인 상태/페이지 분기
 # ─────────────────────────────────────────────────────────────────────────────
-if not st.session_state.logged_in:
-    if st.session_state.page == "signup":
-        signup_page()
-    else:
-        login_page()
+if st.session_state.page == "login":
+    login_page()
+elif st.session_state.page == "signup":
+    signup_page()
 else:
     main_page()
