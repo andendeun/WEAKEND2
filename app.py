@@ -40,7 +40,8 @@ st.markdown("""
         .chat-bubble { display: flex; gap: 10px; align-items: flex-start; }
         .user-bubble-wrapper { display: flex; justify-content: flex-end; }
         .user-bubble {
-            background-color: #218AFF;  /* iMessage 블루 톤 */  
+            background-color: #218AFF;  /* iMessage 블루 톤 */
+            color: #FFFFFF;             /* 흰 글씨 */
             padding: 12px 16px;
             border-radius: 18px 18px 0 18px;
             max-width: 75%;
@@ -48,7 +49,7 @@ st.markdown("""
         }
 
         .bot-bubble {
-            background-color: #39FF5A;  /* SMS 그린 톤 */  
+            background-color: #6E6E6E;  /* 짙은 회색 톤 */
             padding: 12px 16px;
             border-radius: 18px 18px 18px 0;
             max-width: 75%;
