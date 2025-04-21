@@ -88,8 +88,7 @@ def login_page():
 
 
 def signup_page():
-    st.markdown("<h1>📝 회원가입</h1>", unsafe_allow_html=True)
-    st.image("mainimage.png", use_container_width=True)
+    st.markdown("<h1>회원가입</h1>", unsafe_allow_html=True)
 
     login_id = st.text_input("아이디")
     password = st.text_input("비밀번호", type="password")
