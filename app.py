@@ -49,7 +49,7 @@ st.markdown("""
         }
 
         .bot-bubble {
-            background-color: #6E6E6E;  /* 짙은 회색 톤 */
+            background-color: #e9e9e9;  /* 짙은 회색 톤 */
             padding: 12px 16px;
             border-radius: 18px 18px 18px 0;
             max-width: 75%;
