@@ -1,75 +1,113 @@
-# app.py
-import streamlit as st
+import os
+import tempfile
+import speech_recognition as sr
+import re
+from datetime import date
+from backend.auth import register, login
+from backend.chatbot import generate_response
+from reports import plot_emotion_trend, get_emotion_report, create_pdf_report
 import pandas as pd
-import altair as alt
+import matplotlib.pyplot as plt
+from backend.db import get_region_list
+from backend.log_emotions import log_emotion
 
-# 0) 페이지 설정
-st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+import streamlit as st
 
-# 1) 모바일 프레임 CSS (360×640px 중앙 박스)
-mobile_frame_css = '''
-<style>
-/* 중앙 모바일 박스 컨테이너 */
-[data-testid="stAppViewContainer"] > div:first-child {
-    width: 360px !important;
-    max-width: 360px !important;
-    height: 640px !important;
-    margin: 0 auto !important;
-    border: 1px solid #ddd !important;
-    border-radius: 20px !important;
-    overflow: hidden !important;
-}
-/* 배경 색상 */
-[data-testid="stAppViewContainer"] > div:first-child,
-[data-testid="stAppViewContainer"] {
-    background-color: #faf8f2 !important;
-}
-</style>
-'''
-st.markdown(mobile_frame_css, unsafe_allow_html=True)
+# ─────────────────────────────────────────────────────────────────────────────
+# 0) 페이지 설정 & CSS
+# ─────────────────────────────────────────────────────────────────────────────
+st.set_page_config(page_title="WEAKEND 감정 챗봇", layout="centered")
 
-# 2) 헤더: 로고, Today I feel, 설정 아이콘
-col1, col2, col3 = st.columns([1,4,1])
-with col1:
-    st.image("logo.png", width=80)
-with col2:
-    st.markdown("## Today I feel", unsafe_allow_html=True)
-with col3:
-    st.button("⚙️")
+st.markdown("""
+    <style>
+        .block-container {
+            max-width: 450px;
+            height: 640px;         /* 세로 고정 */
+            overflow-y: auto;      /* 내부 스크롤 */
+            margin: 40px auto;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+        }
+        body {
+            background-color: #f1f3f6;
+        }
+        h1 { font-size: 28px !important; text-align: center; }
+        h3 { font-size: 18px !important; text-align: center; }
+        button { font-size: 16px !important; }
+        .chat-container { max-height: 300px; overflow-y: auto; }
+        .chat-bubble { display: flex; gap: 10px; align-items: flex-start; }
+        .user-bubble-wrapper { display: flex; justify-content: flex-end; }
+        .user-bubble {
+            background-color: #A8E6CF; padding: 12px 16px;
+            border-radius: 18px 18px 0 18px; max-width:75%;
+            word-break: break-word;
+        }
+        .bot-bubble {
+            background-color: #ECECEC; padding: 12px 16px;
+            border-radius: 18px 18px 18px 0; max-width:75%;
+            word-break: break-word;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-# 3) 감정 슬라이더 & 중앙 라벨
-emotions = ["SAD", "CALM", "HAPPY"]
-current = st.select_slider("", options=emotions, value="CALM", format_func=lambda x: "")
-st.markdown(f"<h1 style='text-align:center; margin:0'>{current}</h1>", unsafe_allow_html=True)
+# ─────────────────────────────────────────────────────────────────────────────
+# 1) 세션 상태 초기화
+# ─────────────────────────────────────────────────────────────────────────────
+if "page" not in st.session_state:
+    st.session_state.page = "login"       # login, signup, main
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = ""
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
 
-# 4) 주간 스냅샷: 요일 + 컬러 도트
-dates = pd.date_range(end=pd.Timestamp.today(), periods=7)
-df_week = pd.DataFrame({
-    "date": dates,
-    "emotion": ["SAD","CALM","HAPPY","CALM","SAD","CALM","HAPPY"]
-})
-cols = st.columns(7)
-color_map = {"SAD":"#AADAFF","CALM":"#AAF2BD","HAPPY":"#FFD8A8"}
-for d, col in zip(df_week.itertuples(), cols):
-    with col:
-        st.write(d.date.strftime("%a\n%d"))
-        st.markdown(
-            f"<div style='width:16px;height:16px;border-radius:50%;background:{color_map[d.emotion]};margin:auto'></div>",
-            unsafe_allow_html=True
-        )
+# ─────────────────────────────────────────────────────────────────────────────
+# 2) 페이지별 함수 정의
+# ─────────────────────────────────────────────────────────────────────────────
+def login_page():
+    st.markdown("<h1>☀️ WEAKEND ☀️</h1>", unsafe_allow_html=True)
+    st.image("mainimage.png", use_container_width=True)
+    st.subheader("🔐 로그인")
 
-# 5) 트렌드 라인 차트
-df_week["score"] = [1,2,1.5,3,2.5,2,3]
-chart = alt.Chart(df_week).mark_line(point=True).encode(
-    x=alt.X('date:T', axis=alt.Axis(title=None, labels=False)),
-    y=alt.Y('score:Q', axis=alt.Axis(title=None))
-).properties(height=150)
-st.altair_chart(chart, use_container_width=True)
+    user = st.text_input("아이디")
+    passwd = st.text_input("비밀번호", type="password")
 
-# 6) 하단 네비게이션 바
-st.markdown("---")
-nav_cols = st.columns(4)
-icons = ["＋","💬","👤","📊"]
-for icon, col in zip(icons, nav_cols):
-    with col:
-        st.button(icon, key=icon)
+    if st.button("로그인"):
+        if login(user, passwd):
+            st.session_state.logged_in = True
+            st.session_state.username = user
+            st.success("로그인 성공! 🎉")
+        else:
+            st.error("아이디 또는 비밀번호가 일치하지 않습니다.")
+
+    st.markdown("---")
+    if st.button("📝 회원가입"):
+        st.session_state.page = "signup"
+
+
+def signup_page():
+    st.markdown("<h1>📝 회원가입</h1>", unsafe_allow_html=True)
+    st.image("mainimage.png", use_container_width=True)
+
+    login_id = st.text_input("아이디")
+    password = st.text_input("비밀번호", type="password")
+    birthdate = st.date_input(
+        "생년월일",
+        min_value=date(1900, 1, 1),
+        max_value=date.today()
+    )
+
+    region_options = get_region_list()
+    region_name_to_id = dict(region_options)
+    region_name = st.selectbox("거주지역", list(region_name_to_id.keys()))
+    region_id = region_name_to_id.get(region_name)
+
+    phonenumber = st.text_input("핸드폰번호 (예: 010-1234-5678)")
+    gender = st.selectbox("성별", ["남성", "여성"])
+
+    if st.button("회원가입하기"):
+        if not re.match(r"^010
