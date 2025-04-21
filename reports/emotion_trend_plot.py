@@ -20,9 +20,18 @@ else:
 
 # 3) Matplotlib에 한글폰트 등록 (pyplot import 전)
 if os.path.exists(FONT_PATH):
+    # 폰트 추가
     fm.fontManager.addfont(FONT_PATH)
+    # 폰트 매니저 재빌드
+    try:
+        fm._rebuild()
+    except AttributeError:
+        pass
+    # 폰트 이름 가져오기
     FONT_NAME = fm.FontProperties(fname=FONT_PATH).get_name()
+    # rcParams 설정
     mpl.rcParams['font.family'] = FONT_NAME
+    mpl.rcParams['font.sans-serif'] = FONT_NAME
     mpl.rcParams['axes.unicode_minus'] = False
 else:
     print(f"[경고] 한글 폰트 파일을 찾을 수 없습니다: {FONT_PATH}")
