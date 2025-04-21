@@ -110,4 +110,130 @@ def signup_page():
     gender = st.selectbox("성별", ["남성", "여성"])
 
     if st.button("회원가입하기"):
-        if not re.match(r"^010
+        if not re.match(r"^010-\d{4}-\d{4}$", phonenumber):
+            st.error("전화번호 형식이 올바르지 않습니다.")
+        else:
+            success, msg = register(
+                login_id=login_id,
+                password=password,
+                birthdate=birthdate.strftime("%Y-%m-%d"),
+                region_id=region_id,
+                phonenumber=phonenumber,
+                gender=gender
+            )
+            if success:
+                st.success("회원가입 완료! 로그인 페이지로 이동합니다.")
+                st.session_state.page = "login"
+            else:
+                st.error(msg)
+
+    st.markdown("---")
+    if st.button("← 로그인으로 돌아가기"):
+        st.session_state.page = "login"
+
+
+def main_page():
+    # ─── 사이드바 탭
+    if "active_page" not in st.session_state:
+        st.session_state.active_page = "내 감정 입력하기"
+
+    page = st.sidebar.radio(
+        "탭 선택",
+        ["내 감정 입력하기", "감정 리포트", "맞춤형 컨텐츠 추천"],
+        index=["내 감정 입력하기","감정 리포트","맞춤형 컨텐츠 추천"]
+              .index(st.session_state.active_page)
+    )
+
+    # 1️⃣ 내 감정 입력하기
+    if page == "내 감정 입력하기":
+        st.title("☀️WEAKEND 감정 상담 챗봇")
+        audio_file = st.file_uploader("🎤 음성 파일 업로드 (wav/mp3)", type=["wav","mp3"])
+        user_input = ""
+
+        if audio_file:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+                tmp.write(audio_file.read())
+                recognizer = sr.Recognizer()
+                with sr.AudioFile(tmp.name) as src:
+                    audio_data = recognizer.record(src)
+                    try:
+                        user_input = recognizer.recognize_google(audio_data, language="ko-KR")
+                        st.success(f"📝 변환된 텍스트: {user_input}")
+                    except:
+                        st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
+
+        if not user_input:
+            user_input = st.text_input("✏️ 감정을 표현해 보세요")
+
+        if user_input:
+            log_emotion(st.session_state.username, "user", user_input)
+            bot_reply = generate_response(user_input)
+            log_emotion(st.session_state.username, "bot", bot_reply)
+            st.session_state.chat_history.append(("user", user_input))
+            st.session_state.chat_history.append(("bot", bot_reply))
+
+        st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+        paired = list(zip(st.session_state.chat_history[::2],
+                          st.session_state.chat_history[1::2]))
+        for u_msg, b_msg in reversed(paired):
+            st.markdown(f'''
+                <div class="user-bubble-wrapper">
+                  <div class="user-bubble">{u_msg[1]}</div>
+                </div>
+                <div class="chat-bubble">
+                  <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" width="24" />
+                  <div class="bot-bubble">{b_msg[1]}</div>
+                </div>
+            ''', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # 2️⃣ 감정 리포트
+    elif page == "감정 리포트":
+        st.title("📊 감정 변화 트렌드")
+        report_df = get_emotion_report(st.session_state.username)
+        report_df["분석 날짜"] = pd.to_datetime(report_df["분석 날짜"]).dt.date
+        min_date, max_date = report_df["분석 날짜"].min(), report_df["분석 날짜"].max()
+
+        col1, col2 = st.columns(2)
+        with col1:
+            start_date = st.date_input("시작일", value=min_date,
+                                       min_value=min_date, max_value=max_date, key="start_date")
+        with col2:
+            end_date = st.date_input("종료일", value=max_date,
+                                     min_value=min_date, max_value=max_date, key="end_date")
+
+        period = st.radio("집계 단위", ["일별","주별","월별"], horizontal=True)
+        fig = plot_emotion_trend(st.session_state.username, start_date, end_date, period)
+        if fig:
+            st.pyplot(fig)
+        else:
+            st.warning("선택한 기간에 데이터가 없습니다.")
+
+        c1, c2, c3 = st.columns([1,2,1])
+        with c2:
+            pdf_bytes = create_pdf_report(st.session_state.username)
+            st.download_button("📥 PDF 다운로드", data=pdf_bytes,
+                               file_name=f"{st.session_state.username}_감정리포트_{date.today()}.pdf",
+                               mime="application/pdf")
+
+    # 3️⃣ 맞춤형 컨텐츠 추천
+    else:
+        st.title("🎯 맞춤형 컨텐츠 추천")
+        st.write("서비스 준비 중입니다...")
+
+    # 로그아웃
+    if st.sidebar.button("로그아웃"):
+        st.session_state.logged_in = False
+        st.session_state.page = "login"
+        st.session_state.chat_history = []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3) 라우팅: 로그인 상태/페이지 분기
+# ─────────────────────────────────────────────────────────────────────────────
+if not st.session_state.logged_in:
+    if st.session_state.page == "signup":
+        signup_page()
+    else:
+        login_page()
+else:
+    main_page()
