@@ -124,8 +124,8 @@ def show_login_page():
         password = st.text_input("비밀번호", type="password")
         birthdate = st.date_input(
             "생년월일",
-            min_value=date.date(1900, 1, 1),
-            max_value=date.date.today()
+            min_value=date(1900, 1, 1),
+            max_value=date.today()
         )
 
         region_options = get_region_list()
