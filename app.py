@@ -40,15 +40,21 @@ st.markdown("""
         .chat-bubble { display: flex; gap: 10px; align-items: flex-start; }
         .user-bubble-wrapper { display: flex; justify-content: flex-end; }
         .user-bubble {
-            background-color: #A8E6CF; padding: 12px 16px;
-            border-radius: 18px 18px 0 18px; max-width:75%;
+            background-color: #218AFF;  /* iMessage 블루 톤 */  
+            padding: 12px 16px;
+            border-radius: 18px 18px 0 18px;
+            max-width: 75%;
             word-break: break-word;
         }
+
         .bot-bubble {
-            background-color: #ECECEC; padding: 12px 16px;
-            border-radius: 18px 18px 18px 0; max-width:75%;
+            background-color: #39FF5A;  /* SMS 그린 톤 */  
+            padding: 12px 16px;
+            border-radius: 18px 18px 18px 0;
+            max-width: 75%;
             word-break: break-word;
         }
+
     </style>
 """, unsafe_allow_html=True)
 
@@ -157,7 +163,7 @@ def main_page():
                         st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
 
         if not user_input:
-            user_input = st.text_input("CHAT")
+            user_input = st.text_input("📝 CHAT")
 
         if user_input:
             log_emotion(st.session_state.username, "user", user_input)
