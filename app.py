@@ -20,8 +20,8 @@ st.set_page_config(page_title="WEAKEND 감정 챗봇", layout="centered")
 st.markdown("""
     <style>
         .block-container {
-            max-width: 360px;
-            height: 640px;         /* 세로 고정 */
+            max-width: 414px;
+            height: 896px;         /* 세로 고정 */
             overflow-y: auto;      /* 내부 스크롤 */
             margin: 40px auto;
             background-color: white;
@@ -68,7 +68,6 @@ if "chat_history" not in st.session_state:
 # 2) 페이지별 함수 정의
 # ─────────────────────────────────────────────────────────────────────────────
 def login_page():
-    st.markdown("<h1>☀️ WEAKEND ☀️</h1>", unsafe_allow_html=True)
     st.image("mainimage.png", use_container_width=True)
 
     user = st.text_input("아이디")
