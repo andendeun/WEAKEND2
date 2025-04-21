@@ -70,7 +70,6 @@ if "chat_history" not in st.session_state:
 def login_page():
     st.markdown("<h1>☀️ WEAKEND ☀️</h1>", unsafe_allow_html=True)
     st.image("mainimage.png", use_container_width=True)
-    st.subheader("🔐 로그인")
 
     user = st.text_input("아이디")
     passwd = st.text_input("비밀번호", type="password")
