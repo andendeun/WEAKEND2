@@ -129,19 +129,19 @@ def signup_page():
 
 def main_page():
     if "active_page" not in st.session_state:
-        st.session_state.active_page = "내 감정 입력하기"
+        st.session_state.active_page = "내 감정 알아보기"
 
     page = st.sidebar.radio(
         "탭 선택",
-        ["내 감정 입력하기", "감정 리포트", "맞춤형 컨텐츠 추천"],
-        index=["내 감정 입력하기","감정 리포트","맞춤형 컨텐츠 추천"]
+        ["내 감정 알아보기", "감정 리포트", "맞춤형 컨텐츠 추천"],
+        index=["내 감정 알아보기","감정 리포트","맞춤형 컨텐츠 추천"]
               .index(st.session_state.active_page)
     )
 
-    # 1️⃣ 내 감정 입력하기
-    if page == "내 감정 입력하기":
-        st.title("☀️WEAKEND 감정 상담 챗봇")
-        audio_file = st.file_uploader("🎤 음성 파일 업로드 (wav/mp3)", type=["wav","mp3"])
+    # 1️⃣ 내 감정 알아보기
+    if page == "내 감정 알아보기":
+        st.title("당신의 감정을 입력해 보세요")
+        audio_file = st.file_uploader("🎤 RECORD ", type=["wav","mp3"])
         user_input = ""
 
         if audio_file:
@@ -157,7 +157,7 @@ def main_page():
                         st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
 
         if not user_input:
-            user_input = st.text_input("✏️ 감정을 표현해 보세요")
+            user_input = st.text_input("CHAT")
 
         if user_input:
             log_emotion(st.session_state.username, "user", user_input)
