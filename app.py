@@ -5,12 +5,12 @@ import re
 from datetime import date
 from backend.auth import register, login
 from backend.chatbot import generate_response
-from reports import plot_emotion_trend, get_emotion_report, create_pdf_report
+from reports import create_pdf_report
 import pandas as pd
 import matplotlib.pyplot as plt
 from backend.db import get_region_list
 from backend.log_emotions import log_emotion
-
+from reports.yeji import DATA_PATH, load_data, render_dashboard, render_trend, render_calendar, render_alert
 import streamlit as st
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -190,37 +190,40 @@ def main_page():
 
     # 2️⃣ 감정 리포트
     elif page == "감정 리포트":
-        st.title("📊 감정 변화 트렌드")
-        report_df = get_emotion_report(st.session_state.username)
-        report_df["분석 날짜"] = pd.to_datetime(report_df["분석 날짜"]).dt.date
-        min_date, max_date = report_df["분석 날짜"].min(), report_df["분석 날짜"].max()
+        st.title("📊 감정 리포트")
 
-        col1, col2 = st.columns(2)
-        with col1:
-            start_date = st.date_input("시작일", value=min_date,
-                                       min_value=min_date, max_value=max_date, key="start_date")
-        with col2:
-            end_date = st.date_input("종료일", value=max_date,
-                                     min_value=min_date, max_value=max_date, key="end_date")
+        # ① 데이터 로드 (yeji.py 의 load_data 사용)
+        df = load_data(DATA_PATH)
+        if df.empty:
+            st.warning("로그인 후 대화를 먼저 진행해 주세요.")
+            return
 
-        period = st.radio("집계 단위", ["일별","주별","월별"], horizontal=True)
-        fig = plot_emotion_trend(st.session_state.username, start_date, end_date, period)
-        if fig:
-            st.pyplot(fig)
-        else:
-            st.warning("선택한 기간에 데이터가 없습니다.")
+        # ② yeji.py 의 여러 렌더 함수로 탭 구성
+        tab1, tab2, tab3, tab4 = st.tabs(
+            ["대시보드", "감정 트렌드", "감정 달력", "맞춤 알림"]
+        )
 
-        c1, c2, c3 = st.columns([1,2,1])
-        with c2:
-            pdf_bytes = create_pdf_report(st.session_state.username)
-            st.download_button("📥 PDF 다운로드", data=pdf_bytes,
-                               file_name=f"{st.session_state.username}_감정리포트_{date.today()}.pdf",
-                               mime="application/pdf")
+        with tab1:
+            render_dashboard(df)
 
-    # 3️⃣ 맞춤형 컨텐츠 추천
-    else:
-        st.title("🎯 맞춤형 컨텐츠 추천")
-        st.write("서비스 준비 중입니다...")
+        with tab2:
+            render_trend(df)
+
+        with tab3:
+            render_calendar(df)
+
+        with tab4:
+            render_alert(df)
+
+        # ③ (선택) PDF 다운로드 버튼
+        #    yeji.py 에 PDF 생성 로직이 없다면, 기존 create_pdf_report 유지
+        pdf_bytes = create_pdf_report(st.session_state.username)
+        st.download_button(
+            "📥 PDF 다운로드",
+            data=pdf_bytes,
+            file_name=f"{st.session_state.username}_감정리포트_{date.today()}.pdf",
+            mime="application/pdf",
+        )
 
     # 로그아웃
     if st.sidebar.button("로그아웃"):
