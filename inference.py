@@ -5,8 +5,7 @@ from typing import Tuple, Optional
 import streamlit as st
 from collections import Counter
 from utils.load_model_from_drive import load_model_and_tokenizer_from_drive
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from transformers import Wav2Vec2Processor, Wav2Vec2ForSequenceClassification
+from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2ForSequenceClassification
 import soundfile as sf
 import numpy as np
 import librosa
@@ -82,38 +81,44 @@ def get_mel_spectrogram(path:str, sr:int=22050, n_mels:int=128, fmax:int=8000, w
 def load_ensemble():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     text_models, text_tokenizers = [], []
-    speech_modalities = []  # (model, processor or None, label_map, name)
+    speech_modalities = []
 
     for cfg in MODEL_CONFIGS:
         if cfg['type']=='text':
+            # 1) 텍스트 모델·토크나이저 로드(Drive → 캐시)
             model, tokenizer = load_model_and_tokenizer_from_drive(
-                file_id=cfg['file_id'], model_name=cfg['model_name'],
+                file_id=cfg['file_id'],
+                model_name=cfg['model_name'],
                 num_labels=len(cfg['label_map'])
             )
             model.to(device).eval()
-            text_models.append((model,cfg['label_map']))
+            text_models.append((model, cfg['label_map']))
             text_tokenizers.append(tokenizer)
-        else:
+
+        else:  # speech
             if cfg['name']=='hubert':
-                proc = Wav2Vec2Processor.from_pretrained(cfg['model_name'])
-                mod  = Wav2Vec2ForSequenceClassification.from_pretrained(
+                # 2) 허버트는 FeatureExtractor
+                feat_extractor = Wav2Vec2FeatureExtractor.from_pretrained(cfg['model_name'])
+                mod = Wav2Vec2ForSequenceClassification.from_pretrained(
                     cfg['model_name'], num_labels=len(cfg['label_map'])
                 )
-                # load fine-tuned weights
-                wpath = os.path.join('models',f"{cfg['name']}_emotion.pt")
-                if os.path.exists(wpath): mod.load_state_dict(torch.load(wpath,map_location='cpu'))
+                # fine-tuned weights 덮어씌우기
+                wpath = os.path.join('models', f"{cfg['name']}_emotion.pt")
+                if os.path.exists(wpath):
+                    mod.load_state_dict(torch.load(wpath, map_location='cpu'), strict=False)
                 mod.to(device).eval()
-                speech_modalities.append((mod,proc,cfg['label_map'],cfg['name']))
-            else:  # cnn_speech
-                num_lbl = len(cfg['label_map'])
-                cnn = CNNSpeech(num_lbl)
-                wpath = os.path.join('models',f"{cfg['name']}_emotion.pt")
-                if os.path.exists(wpath): cnn.load_state_dict(torch.load(wpath,map_location='cpu'))
-                cnn.to(device).eval()
-                speech_modalities.append((cnn,None,cfg['label_map'],cfg['name']))
-    return (text_models,text_tokenizers), speech_modalities
+                speech_modalities.append((mod, feat_extractor, cfg['label_map'], cfg['name']))
 
-(text_models,text_tokenizers), speech_modalities = load_ensemble()
+            else:  # cnn_speech
+                cnn = CNNSpeech(len(cfg['label_map']))
+                wpath = os.path.join('models', f"{cfg['name']}_emotion.pt")
+                if os.path.exists(wpath):
+                    cnn.load_state_dict(torch.load(wpath, map_location='cpu'))
+                cnn.to(device).eval()
+                speech_modalities.append((cnn, None, cfg['label_map'], cfg['name']))
+
+    return (text_models, text_tokenizers), speech_modalities
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 예측: 하드 보팅 + 분기 처리
@@ -136,8 +141,10 @@ def predict_emotion_with_score(
         for model,proc,label_map,name in speech_modalities:
             if name=='hubert':
                 audio, sr = sf.read(audio_path)
-                inp = proc(audio,sampling_rate=sr,return_tensors='pt').to(device)
-                with torch.no_grad(): logits = model(**inp).logits
+                # feature extractor 사용
+                inputs = proc(audio, sampling_rate=sr, return_tensors='pt')
+                input_values = inputs['input_values'].to(device)
+                with torch.no_grad(): logits = model(input_values=input_values).logits
                 idx = int(torch.argmax(logits,dim=-1).item())+1
                 votes.append(label_map[idx])
             else:  # cnn
