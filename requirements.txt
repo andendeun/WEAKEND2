@@ -16,8 +16,7 @@ supabase
 plotly
 streamlit-option-menu
 soundfile==0.13.1
-
-
+librosa==0.11.0
 
 
 # PyTorch (CPU 전용, Python 3.12 호환)
