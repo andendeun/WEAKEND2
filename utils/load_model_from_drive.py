@@ -4,7 +4,7 @@ import gdown
 import streamlit as st
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-@st.cache_resource
+# @st.cache_resource
 def load_model_and_tokenizer_from_drive(
     file_id: str,
     model_name: str = 'monologg/koelectra-base-discriminator',
