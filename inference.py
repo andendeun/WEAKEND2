@@ -88,7 +88,7 @@ def load_ensemble():
         if cfg['type']=='text':
             model, tokenizer = load_model_and_tokenizer_from_drive(
                 file_id=cfg['file_id'], model_name=cfg['model_name'],
-                num_labels=len(cfg['label_map']), tokenizer_folder_id=None
+                num_labels=len(cfg['label_map'])
             )
             model.to(device).eval()
             text_models.append((model,cfg['label_map']))
