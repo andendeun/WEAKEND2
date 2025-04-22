@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 
 # Google Drive 파일 ID
-FILE_ID = "1SCS29CyOSaJbk5bRcU-uNCZ0JT3QR3Ma"
+FILE_ID = "1nCl-o_k9u2zcPT4sMcDsUlP1Y66VJaOw"
 
 model, tokenizer = load_model_and_tokenizer_from_drive(
     FILE_ID, 
@@ -13,14 +13,14 @@ model, tokenizer = load_model_and_tokenizer_from_drive(
 
 # 감정 라벨 (8개)
 label_list = [
-    "행복/기쁨/감사",
-    "신뢰/편안/존경/안정",
-    "분노/짜증/불편",
-    "당황/충격/배신감",
-    "공포/불안",
-    "고독/외로움/소외감/허탈",
-    "죄책감/미안함",
-    "걱정/고민/긴장"
+    "슬픔",
+    "소외",
+    "분노",
+    "불안",
+    "긍정",
+    "중립",
+    "당황",
+    "위협"
 ]
 
 
