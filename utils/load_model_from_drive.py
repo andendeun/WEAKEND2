@@ -17,7 +17,7 @@ def load_model_and_tokenizer_from_drive(
     실패시 모두 허깅페이스 허브에서만 불러오도록 폴백 처리
     """
     dest_dir  = "models"
-    dest_path = os.path.join(dest_dir, "koelectra_emotion.pt")
+    dest_path = os.path.join(dest_dir, "KoELECTRA.pt")
     os.makedirs(dest_dir, exist_ok=True)
 
     # ————————————
