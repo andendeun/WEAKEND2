@@ -192,8 +192,8 @@ def main_page():
     elif page == "감정 리포트":
         st.title("📊 감정 리포트")
 
-        # ① 데이터 로드 (yeji.py 의 load_data 사용)
-        df = load_data(DATA_PATH)
+        # ① 데이터 로드
+        df = load_data(st.session_state.username)
         if df.empty:
             st.warning("로그인 후 대화를 먼저 진행해 주세요.")
             return
