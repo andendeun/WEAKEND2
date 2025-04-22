@@ -1,16 +1,14 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
 import calendar
 from collections import Counter
 
 # ───────────────────────────────────────────────────────────────────────────────
-# 사용자 DB 연동 버전: get_emotion_report 호출
-from reports import get_emotion_report
+# 사용자 DB 연동: get_emotion_report 호출
+from reports.generate_report import get_emotion_report
 
-# --- 키워드 추출 함수 (chat_content 기반이 아니면 동작하지 않음) ---
+# --- 키워드 추출 함수 ---
 def extract_keywords(texts, top_n=5):
     words = []
     for t in texts:
@@ -22,50 +20,38 @@ def extract_keywords(texts, top_n=5):
 # --- 데이터 로드 및 전처리 ---
 @st.cache_data
 def load_data(login_id: str) -> pd.DataFrame:
-    """
-    DB에서 감정 로그를 가져와서 분석용 DataFrame으로 변환합니다.
-    - login_id: 사용자 아이디
-    DataFrame 컬럼: ['date','emotion','text','category']
-    """
     df = get_emotion_report(login_id)
     if df.empty:
         return pd.DataFrame()
 
-    # 컬럼명 통일
     df = df.rename(columns={
+        'analysis_date': 'date',
         '분석 날짜': 'date',
+        'middle_categoryname': 'emotion',
         '감정 카테고리': 'emotion',
-        # '챗내용': 'text'   # 필요하다면 실제 컬럼명 매핑
+        'chat_content': 'text'
     })
-
-    # 날짜 타입
     df['date'] = pd.to_datetime(df['date'])
-
-    # 텍스트 컬럼이 없으면 빈 문자열로 채움 (키워드 기능 제한)
     if 'text' not in df.columns:
         df['text'] = ''
-
-    # 감정 카테고리 매핑 (긍정/중립/부정)
     df['category'] = df['emotion'].apply(
-        lambda e: '긍정' if e == '긍정'
-                  else ('중립' if e == '중립' else '부정')
+        lambda e: '긍정' if e == '긍정' else ('중립' if e == '중립' else '부정')
     )
     return df
 
 # --- 대시보드: 파스텔 그라데이션 게이지 + 메트릭 ---
 def render_dashboard(df: pd.DataFrame):
     st.header("🎯 대시보드")
-
     if df.empty:
         st.info("분석할 감정 데이터가 없습니다.")
         return
 
-    # 최빈 감정 및 점수 매핑
+    # 점수 매핑
     mood      = df['category'].mode().iloc[0]
     score_map = {'부정':1, '중립':2, '긍정':3}
     val       = score_map[mood]
 
-    # 게이지 차트 색상 스텝 생성
+    # 게이지 스텝 생성
     n_steps = 60
     steps = []
     for i, t in enumerate(np.linspace(0, 1, n_steps)):
@@ -79,27 +65,24 @@ def render_dashboard(df: pd.DataFrame):
     emoji_map = {'부정':'☹️','중립':'😐','긍정':'😊'}
     ticks     = [emoji_map['부정'], emoji_map['중립'], emoji_map['긍정']]
 
-    fig = go.Figure(go.Indicator(
-        mode="gauge",
-        value=val,
-        gauge={
-            'axis': {
-                'range': [1,3],
-                'tickmode': 'array',
-                'tickvals': [1,2,3],
-                'ticktext': ticks,
-                'tickfont': {'size':30}
-            },
-            'bar': {'color':'black','thickness':0.2},
-            'steps': steps,
-            'threshold': {'line':{'color':'black','width':4},'thickness':0.8,'value':val}
-        }
-    ))
+    try:
+        import plotly.graph_objects as go
+        import plotly.express as px
+        fig = go.Figure(go.Indicator(
+            mode="gauge",
+            value=val,
+            gauge={
+                'axis': {'range': [1,3], 'tickmode':'array','tickvals':[1,2,3],'ticktext':ticks,'tickfont':{'size':30}},
+                'bar': {'color':'black','thickness':0.2},
+                'steps': steps,
+                'threshold': {'line':{'color':'black','width':4},'thickness':0.8,'value':val}
+            }
+        ))
+        fig.update_layout(title="전체 대화 기반 감정 게이지", height=450, margin={'t':50,'b':20})
+        st.plotly_chart(fig, use_container_width=True)
+    except ImportError:
+        st.warning("Plotly 미설치로 인한 대시보드 그래프 표시 불가")
 
-    fig.update_layout(title="전체 대화 기반 감정 게이지", height=450, margin={'t':50,'b':20})
-    st.plotly_chart(fig, use_container_width=True)
-
-    # 비율 메트릭
     counts = df['category'].value_counts(normalize=True).mul(100).round(1)
     c1, c2, c3 = st.columns(3)
     c1.metric("😊 긍정", f"{counts.get('긍정',0)}%")
@@ -121,45 +104,49 @@ def render_trend(df: pd.DataFrame):
     with c2:
         end = st.date_input('종료일', min_value=min_d, max_value=max_d, value=max_d)
     if start > end:
-        st.error('시작일이 종료일보다 클 수 없습니다.'); return
+        st.error('시작일이 종료일보다 클 수 없습니다.')
+        return
 
     df_f = df[(df['date'].dt.date >= start) & (df['date'].dt.date <= end)].copy()
     if df_f.empty:
-        st.warning('선택한 기간에 데이터가 없습니다.'); return
-
-    freq = st.radio('단위', ['일별','주별','월별'], horizontal=True)
-    if freq == '일별':
-        latest = df_f['date'].dt.date.max()
-        counts = df_f[df_f['date'].dt.date==latest]['emotion'].value_counts(normalize=True).mul(100).round(1)
-        pie_df = counts.reset_index(); pie_df.columns = ['emotion','percent']
-        fig = px.pie(pie_df, names='emotion', values='percent', hole=0.5, title=f"{latest} 감정 분포")
-        fig.update_traces(textinfo='percent+label')
-        st.plotly_chart(fig, use_container_width=True)
-        # 키워드 (text가 비어있다면 표시 안 됨)
-        if df_f['text'].str.strip().any():
-            texts = df_f[df_f['date'].dt.date==latest]['text'].tolist()
-            top_kw = extract_keywords(texts, top_n=5)
-            st.subheader("📌 주요 키워드")
-            for kw,cnt in top_kw:
-                st.write(f"- **{kw}** ({cnt}회)")
+        st.warning('선택한 기간에 데이터가 없습니다.')
         return
 
-    if freq == '주별':
-        df_f['period'] = df_f['date'] - pd.to_timedelta(df_f['date'].dt.weekday, unit='d')
-        title = '주별 감정 비율 흐름'
-    else:
-        df_f['period'] = df_f['date'].dt.to_period('M').dt.to_timestamp()
-        title = '월별 감정 비율 흐름'
+    freq = st.radio('단위', ['일별','주별','월별'], horizontal=True)
+    try:
+        import plotly.express as px
+        if freq == '일별':
+            latest = df_f['date'].dt.date.max()
+            counts = df_f[df_f['date'].dt.date==latest]['emotion'].value_counts(normalize=True).mul(100).round(1)
+            pie_df = counts.reset_index(); pie_df.columns = ['감정','percent']
+            fig = px.pie(pie_df, names='감정', values='percent', hole=0.5, title=f"{latest} 감정 분포")
+            fig.update_traces(textinfo='percent+label')
+            st.plotly_chart(fig, use_container_width=True)
+            if df_f['text'].str.strip().any():
+                top_kw = extract_keywords(df_f[df_f['date'].dt.date==latest]['text'].tolist(), top_n=5)
+                st.subheader("📌 주요 키워드")
+                for kw,cnt in top_kw:
+                    st.write(f"- **{kw}** ({cnt}회)")
+            return
 
-    agg = df_f.groupby(['period','emotion']).size().reset_index(name='count')
-    pivot = agg.pivot(index='period', columns='emotion', values='count').fillna(0)
-    ratio = pivot.div(pivot.sum(axis=1), axis=0)
-    long_df = ratio.reset_index().melt(id_vars='period', var_name='emotion', value_name='ratio')
+        # 주별/월별
+        if freq == '주별':
+            df_f['period'] = df_f['date'] - pd.to_timedelta(df_f['date'].dt.weekday, unit='d')
+            title = '주별 감정 비율 흐름'
+        else:
+            df_f['period'] = df_f['date'].dt.to_period('M').dt.to_timestamp()
+            title = '월별 감정 비율 흐름'
 
-    fig = px.line(long_df, x='period', y='ratio', color='emotion', markers=True,
-                  labels={'period':'기간','ratio':'비율'}, title=title)
-    fig.update_yaxes(tickformat=".0%")
-    st.plotly_chart(fig, use_container_width=True)
+        agg = df_f.groupby(['period','emotion']).size().reset_index(name='count')
+        pivot = agg.pivot(index='period', columns='emotion', values='count').fillna(0)
+        ratio = pivot.div(pivot.sum(axis=1), axis=0)
+        long_df = ratio.reset_index().melt(id_vars='period', var_name='감정', value_name='ratio')
+
+        fig = px.line(long_df, x='period', y='ratio', color='감정', markers=True, title=title)
+        fig.update_yaxes(tickformat=".0%")
+        st.plotly_chart(fig, use_container_width=True)
+    except ImportError:
+        st.warning("Plotly 미설치로 인한 트렌드 그래프 표시 불가")
 
 # --- 감정 달력 ---
 def render_calendar(df: pd.DataFrame):
