@@ -120,6 +120,7 @@ def render_dashboard(df: pd.DataFrame):
         title="▶ 감정 게이지",
         height=600,
         width=350,
+        autosize=False,
         margin={'t':50,'b':20,'l':0,'r':0},
         annotations=[dict(
             x=1.5, y=-0.15, xref='x', yref='paper',
@@ -170,7 +171,7 @@ def render_trend(df: pd.DataFrame):
         pie_df = counts.reset_index()
         pie_df.columns = ['emotion','percent']
         fig = px.pie(pie_df, names='emotion', values='percent',
-                     hole=0.5, title=f"{today} 감정 누적 분포")
+                     hole=0.5, title=f"▶ 감정 분포")
         fig.update_traces(textinfo='percent+label')
         st.plotly_chart(fig, use_container_width=False)
 
@@ -185,10 +186,10 @@ def render_trend(df: pd.DataFrame):
 
     if freq == '주별':
         df_f['period'] = df_f['date'] - pd.to_timedelta(df_f['date'].dt.weekday, unit='d')
-        title = '주차별 감정 흐름'
+        title = '▶ 주차별 감정 흐름'
     else:
         df_f['period'] = df_f['date'].dt.to_period('M').dt.to_timestamp()
-        title = '월별 감정 흐름'
+        title = '▶ 월별 감정 흐름'
 
     agg   = df_f.groupby(['period','emotion']).size().reset_index(name='count')
     pivot = agg.pivot(index='period', columns='emotion', values='count').fillna(0)

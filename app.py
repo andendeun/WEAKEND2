@@ -190,7 +190,7 @@ def main_page():
 
     # 2️⃣ 감정 리포트
     elif page == "감정 리포트":
-        st.title("📊 감정 리포트")
+        st.title("감정 리포트")
 
         # ① 데이터 로드
         df = load_data(st.session_state.username)
@@ -219,7 +219,7 @@ def main_page():
         #    yeji.py 에 PDF 생성 로직이 없다면, 기존 create_pdf_report 유지
         pdf_bytes = create_pdf_report(st.session_state.username)
         st.download_button(
-            "📥 PDF 다운로드",
+            "📥 PDF Downlaod",
             data=pdf_bytes,
             file_name=f"{st.session_state.username}_감정리포트_{date.today()}.pdf",
             mime="application/pdf",
