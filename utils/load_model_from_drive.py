@@ -44,7 +44,8 @@ def load_model_and_tokenizer_from_drive(
 
     # 4) fine-tuned weights 적용
     state_dict = torch.load(weights_path, map_location='cpu')
-    model.load_state_dict(state_dict)
+    # missing/unexpected keys 무시하고 head 부분만 덮어씌우기
+    model.load_state_dict(state_dict, strict=False)
     model.eval()
 
     return model, tokenizer
