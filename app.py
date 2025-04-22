@@ -10,7 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from backend.db import get_region_list
 from backend.log_emotions import log_emotion
-from reports.yeji import DATA_PATH, load_data, render_dashboard, render_trend, render_calendar, render_alert
+from reports.emotion_trend_plot import load_data, render_dashboard, render_trend, render_calendar, render_alert
 import streamlit as st
 
 # ─────────────────────────────────────────────────────────────────────────────
