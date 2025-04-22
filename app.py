@@ -150,7 +150,7 @@ def main_page():
         styles={
             "container": {"padding":"0!important", "background-color":"#f1f3f6"},
             "nav-link": {"font-size":"16px", "padding":"0 20px"},
-            "nav-link-selected": {"background-color":"#e1f5fe", "font-weight":"bold"},
+            "nav-link-selected": {"background-color":"#0976bc", "font-weight":"bold"},
         }
     )
 
@@ -236,7 +236,7 @@ def main_page():
         )
 
     # 로그아웃
-    logout_col, _ = st.columns([1, 5])
+    logout_col, _ = st.columns([3, 1])
     with logout_col:
         if st.button("로그아웃"):
             st.session_state.logged_in = False
