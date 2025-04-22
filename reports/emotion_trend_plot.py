@@ -119,7 +119,8 @@ def render_dashboard(df: pd.DataFrame):
     # 5) 레이블과 메트릭
     fig.update_layout(
         title="전체 데이터 기반 감정 게이지",
-        height=500,
+        height=600,
+        width=350,
         margin={'t':50,'b':20,'l':0,'r':0},
         annotations=[dict(
             x=1.5, y=-0.15, xref='x', yref='paper',
