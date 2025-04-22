@@ -128,7 +128,7 @@ def render_dashboard(df: pd.DataFrame):
             font={'size':20,'color':'#666'}
         )]
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=False)
 
     # 6) 긍정/중립/부정 비율 메트릭
     counts = df['category'].value_counts(normalize=True).mul(100).round(1)
@@ -174,7 +174,7 @@ def render_trend(df: pd.DataFrame):
         fig = px.pie(pie_df, names='emotion', values='percent',
                      hole=0.5, title=f"{today} 감정 누적 분포")
         fig.update_traces(textinfo='percent+label')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=False)
 
         # 오늘의 주요 키워드
         texts = df_today['text'].tolist()
@@ -201,7 +201,7 @@ def render_trend(df: pd.DataFrame):
                   labels={'period':'기간','ratio':'비율'}, title=title)
     fig.update_layout(legend_title='감정')
     fig.update_yaxes(tickformat=".0%")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=False)
 
 
 
