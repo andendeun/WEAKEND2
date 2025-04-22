@@ -121,7 +121,7 @@ def render_dashboard(df: pd.DataFrame):
         height=600,
         width=350,
         autosize=False,
-        margin={'t':50,'b':20,'l':0,'r':0},
+        margin={'t':30,'b':20,'l':0,'r':0},
         annotations=[dict(
             x=1.5, y=-0.15, xref='x', yref='paper',
             text="감정 게이지", showarrow=False,
