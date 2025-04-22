@@ -212,7 +212,11 @@ def render_calendar(df: pd.DataFrame):
     st.header("📅 감정 달력")
     years = sorted(df['date'].dt.year.unique())
     year  = st.selectbox('연도 선택', years, index=len(years)-1)
-    month = st.selectbox('월 선택', list(range(1,13)), index=df['date'].dt.month.max()-1)
+    months = list(range(1, 13))
+    last_month = int(df['date'].dt.month.max())
+    default_idx = months.index(last_month) if last_month in months else 0
+    month = st.selectbox('월 선택', months, index=default_idx)
+
     df_m  = df[(df['date'].dt.year==year)&(df['date'].dt.month==month)]
     dom   = df_m.groupby(df_m['date'].dt.day)['category']\
                 .agg(lambda s: s.mode().iloc[0] if not s.mode().empty else '')
