@@ -7,7 +7,7 @@ from transformers import ElectraForSequenceClassification, ElectraTokenizer
 @st.cache_resource
 def load_model_and_tokenizer_from_drive(
     file_id: str,
-    model_name: str = 'monologg/koelectra-base-v3-discriminator',
+    model_name: str = 'monologg/koelectra-base-discriminator',
     num_labels: int = 8
 ):
     """
