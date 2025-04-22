@@ -2,20 +2,38 @@ from datetime import date, datetime
 from inference import predict_emotion_with_score
 from backend.db import supabase, get_userid_by_login
 
-def log_emotion(login_id: str, role: str, message: str) -> None:
-    # 0) 로그인된 user_id 조회
-    user_id = get_userid_by_login(login_id)
-    if user_id is None:
-        raise ValueError(f"Unknown login_id: {login_id}")
+import streamlit as st
+from postgrest import APIError
 
-    # 1) chat_log에는 user/bot 구분 없이 모두 저장
-    chat_ins = supabase.table("chat_log").insert({
-        "userid":       user_id,
-        "chat_time":    datetime.now().isoformat(),
-        "chat_content": message,
-        "chat_role":    role
-    }).execute()
-    chat_id = chat_ins.data[0]["chat_id"]
+def log_emotion(username, role, user_input):
+    payload = {
+        'username': username,
+        'role':     role,
+        'message':  user_input,
+        # 필요하다면 emotion_id 같은 정수형 FK도 추가
+    }
+
+    try:
+        # 반환은 0개~1개를 허용합니다.
+        res = supabase.table('emotions_log') \
+            .insert(payload) \
+            .select('*') \
+            .maybe_single() \
+            .execute()
+
+        if res.error:
+            st.error(f"Insert 실패: {res.error.message}")
+            return None
+
+        return res.data
+
+    except APIError as e:
+        # e.args[0]에 서버가 보낸 전체 JSON이 담겨 있습니다.
+        st.error("APIError 발생! 서버 응답 내용:")
+        st.json(e.args[0])
+        # 필요하다면 로그에도 남기고, 여기서 리턴하거나 다시 raise 하세요.
+        return None
+
 
     # 2) 오직 role="user" 일 때만 emotions 테이블에 분석 결과 저장
     if role == "user":
