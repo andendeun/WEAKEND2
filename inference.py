@@ -1,4 +1,3 @@
-# inference.py
 import os
 import torch
 from typing import Tuple, Optional
@@ -75,17 +74,16 @@ def get_mel_spectrogram(path:str, sr:int=22050, n_mels:int=128, fmax:int=8000, w
     return S_norm
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 전역 캐시: 모델·토크나이저·프로세서 로드
+# 전역 캐시: 모델·토크나이저·피처 익스트랙터 로드
 # ─────────────────────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_ensemble():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     text_models, text_tokenizers = [], []
-    speech_modalities = []
+    speech_modalities = []  # (model, processor or None, label_map, name)
 
     for cfg in MODEL_CONFIGS:
-        if cfg['type']=='text':
-            # 1) 텍스트 모델·토크나이저 로드(Drive → 캐시)
+        if cfg['type'] == 'text':
             model, tokenizer = load_model_and_tokenizer_from_drive(
                 file_id=cfg['file_id'],
                 model_name=cfg['model_name'],
@@ -96,13 +94,11 @@ def load_ensemble():
             text_tokenizers.append(tokenizer)
 
         else:  # speech
-            if cfg['name']=='hubert':
-                # 2) 허버트는 FeatureExtractor
+            if cfg['name'] == 'hubert':
                 feat_extractor = Wav2Vec2FeatureExtractor.from_pretrained(cfg['model_name'])
                 mod = Wav2Vec2ForSequenceClassification.from_pretrained(
                     cfg['model_name'], num_labels=len(cfg['label_map'])
                 )
-                # fine-tuned weights 덮어씌우기
                 wpath = os.path.join('models', f"{cfg['name']}_emotion.pt")
                 if os.path.exists(wpath):
                     mod.load_state_dict(torch.load(wpath, map_location='cpu'), strict=False)
@@ -119,41 +115,49 @@ def load_ensemble():
 
     return (text_models, text_tokenizers), speech_modalities
 
+# 캐시된 모델·토크나이저 불러오기
+(text_models, text_tokenizers), speech_modalities = load_ensemble()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 예측: 하드 보팅 + 분기 처리
 # ─────────────────────────────────────────────────────────────────────────────
 def predict_emotion_with_score(
-    text: Optional[str]=None,
-    audio_path: Optional[str]=None
-) -> Tuple[str,float]:
+    text: Optional[str] = None,
+    audio_path: Optional[str] = None
+) -> Tuple[str, float]:
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     votes = []
+
     # 텍스트 모델 예측
     if text:
-        for (model,label_map),tokenizer in zip(text_models,text_tokenizers):
-            inp = tokenizer(text,return_tensors='pt',padding=True,truncation=True,max_length=128).to(device)
-            with torch.no_grad(): logits = model(**inp).logits
-            idx = int(torch.argmax(logits,dim=-1).item())
+        for (model, label_map), tokenizer in zip(text_models, text_tokenizers):
+            inp = tokenizer(text, return_tensors='pt', padding=True, truncation=True, max_length=128).to(device)
+            with torch.no_grad():
+                logits = model(**inp).logits
+            idx = int(torch.argmax(logits, dim=-1).item())
             votes.append(label_map[idx])
+
     # 음성 모델 예측
     if audio_path:
-        for model,proc,label_map,name in speech_modalities:
-            if name=='hubert':
+        for model, proc, label_map, name in speech_modalities:
+            if name == 'hubert':
                 audio, sr = sf.read(audio_path)
-                # feature extractor 사용
                 inputs = proc(audio, sampling_rate=sr, return_tensors='pt')
                 input_values = inputs['input_values'].to(device)
-                with torch.no_grad(): logits = model(input_values=input_values).logits
-                idx = int(torch.argmax(logits,dim=-1).item())+1
+                with torch.no_grad():
+                    logits = model(input_values=input_values).logits
+                idx = int(torch.argmax(logits, dim=-1).item()) + 1
                 votes.append(label_map[idx])
             else:  # cnn
                 S = get_mel_spectrogram(audio_path)
-                x = torch.tensor(S,dtype=torch.float32).unsqueeze(0).unsqueeze(0).to(device)
-                with torch.no_grad(): logits = model(x)
-                idx = int(torch.argmax(logits,dim=-1).item())
+                x = torch.tensor(S, dtype=torch.float32).unsqueeze(0).unsqueeze(0).to(device)
+                with torch.no_grad():
+                    logits = model(x)
+                idx = int(torch.argmax(logits, dim=-1).item())
                 votes.append(label_map[idx])
+
     if not votes:
         raise ValueError('텍스트 또는 음성 입력을 제공해주세요.')
-    vote,count = Counter(votes).most_common(1)[0]
-    return vote, count/len(votes)
+
+    vote, count = Counter(votes).most_common(1)[0]
+    return vote, count / len(votes)
