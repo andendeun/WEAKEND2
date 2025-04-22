@@ -78,7 +78,7 @@ def get_mel_spectrogram(path:str, sr:int=22050, n_mels:int=128, fmax:int=8000, w
 # ─────────────────────────────────────────────────────────────────────────────
 # 전역 캐시: 모델·토크나이저·프로세서 로드
 # ─────────────────────────────────────────────────────────────────────────────
-@st.cache(allow_output_mutation=True)
+@st.cache_resource
 def load_ensemble():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     text_models, text_tokenizers = [], []
