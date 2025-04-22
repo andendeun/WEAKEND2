@@ -65,7 +65,6 @@ def render_dashboard(df: pd.DataFrame):
         st.info("분석할 감정 데이터가 없습니다.")
         return
     
-    st.header("🎯 대시보드")
 
     # 1) 최빈 감정 → score (1~3)
     mood      = df['category'].mode().iloc[0]
@@ -118,7 +117,7 @@ def render_dashboard(df: pd.DataFrame):
 
     # 5) 레이블과 메트릭
     fig.update_layout(
-        title="전체 데이터 기반 감정 게이지",
+        title="▶ 감정 게이지",
         height=600,
         width=350,
         margin={'t':50,'b':20,'l':0,'r':0},
@@ -145,7 +144,6 @@ def render_dashboard(df: pd.DataFrame):
 
 # --- 감정 트렌드: Plotly Line 차트 ---
 def render_trend(df: pd.DataFrame):
-    st.header("📊 감정 트렌드 분석")
     dates = df['date'].dt.date
     min_d, max_d = dates.min(), dates.max()
     c1, c2 = st.columns(2)
@@ -160,7 +158,7 @@ def render_trend(df: pd.DataFrame):
     if df_f.empty:
         st.warning('선택한 기간에 데이터가 없습니다.'); return
 
-    freq = st.radio('단위', ['일별','주별','월별'], horizontal=True)
+    freq = st.radio('조회기준', ['일별','주별','월별'], horizontal=True)
 
     if freq == '일별':
         today    = df_f['date'].dt.date.max()
@@ -187,10 +185,10 @@ def render_trend(df: pd.DataFrame):
 
     if freq == '주별':
         df_f['period'] = df_f['date'] - pd.to_timedelta(df_f['date'].dt.weekday, unit='d')
-        title = '주별 감정 비율 흐름'
+        title = '주차별 감정 흐름'
     else:
         df_f['period'] = df_f['date'].dt.to_period('M').dt.to_timestamp()
-        title = '월별 감정 비율 흐름'
+        title = '월별 감정 흐름'
 
     agg   = df_f.groupby(['period','emotion']).size().reset_index(name='count')
     pivot = agg.pivot(index='period', columns='emotion', values='count').fillna(0)
@@ -210,7 +208,6 @@ def render_trend(df: pd.DataFrame):
 
 # --- 감정 달력 ---
 def render_calendar(df: pd.DataFrame):
-    st.header("📅 감정 달력")
     years = sorted(df['date'].dt.year.unique())
     year  = st.selectbox('연도 선택', years, index=len(years)-1)
     months = list(range(1, 13))
@@ -237,7 +234,6 @@ def render_calendar(df: pd.DataFrame):
 
 # --- 맞춤 알림 ---
 def render_alert(df: pd.DataFrame):
-    st.header("🔔 맞춤형 알림")
     daily = df.groupby(df['date'].dt.date)['category']\
               .apply(lambda s:(s=='부정').mean())\
               .reset_index(name='neg_ratio')
