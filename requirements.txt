@@ -14,7 +14,7 @@ fpdf
 gdown
 supabase
 plotly
-
+streamlit-option-menu
 
 
 

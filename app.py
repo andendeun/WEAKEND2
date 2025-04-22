@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from backend.db import get_region_list
 from backend.log_emotions import log_emotion
 from reports.emotion_trend_plot import load_data, render_dashboard, render_trend, render_calendar, render_alert
+from streamlit_option_menu import option_menu
 import streamlit as st
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -138,12 +139,22 @@ def main_page():
     if "active_page" not in st.session_state:
         st.session_state.active_page = "내 감정 알아보기"
 
-    page = st.sidebar.radio(
-        "탭 선택",
-        ["내 감정 알아보기", "감정 리포트", "맞춤형 컨텐츠 추천"],
-        index=["내 감정 알아보기","감정 리포트","맞춤형 컨텐츠 추천"]
-              .index(st.session_state.active_page)
-    )
+
+    with st.sidebar:
+        page = option_menu(
+            menu_title="",
+            options=["내 감정 알아보기", "감정 리포트", "맞춤형 컨텐츠 추천"],
+            icons=["pencil-square", "bar-chart", "heart"],
+            default_index=["내 감정 알아보기", "감정 리포트", "맞춤형 컨텐츠 추천"]
+                           .index(st.session_state.active_page),
+            orientation="vertical",
+            styles={
+                "container": {"padding":"0!important","background-color":"#fff"},
+                "icon": {"font-size":"20px"},
+                "nav-link": {"font-size":"16px","text-align":"left","margin":"0px"},
+                "nav-link-selected": {"background-color":"#e1f5fe"},
+            }
+        )
 
     # 1️⃣ 내 감정 알아보기
     if page == "내 감정 알아보기":
