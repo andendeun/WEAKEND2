@@ -10,28 +10,21 @@ def log_emotion(username, role, user_input):
         'username': username,
         'role':     role,
         'message':  user_input,
-        # 필요하다면 emotion_id 같은 정수형 FK도 추가
     }
 
     try:
-        # 반환은 0개~1개를 허용합니다.
+        # ← 여기부터 바꿔주세요
         res = supabase.table('emotions_log') \
             .insert(payload) \
-            .select('*') \
-            .maybe_single() \
             .execute()
-
+        # ← 여기까지 (방법 1)
+        
         if res.error:
             st.error(f"Insert 실패: {res.error.message}")
             return None
-
         return res.data
-
     except APIError as e:
-        # e.args[0]에 서버가 보낸 전체 JSON이 담겨 있습니다.
-        st.error("APIError 발생! 서버 응답 내용:")
-        st.json(e.args[0])
-        # 필요하다면 로그에도 남기고, 여기서 리턴하거나 다시 raise 하세요.
+        st.error(f"APIError: {e.args[0]}")
         return None
 
 
