@@ -13,19 +13,28 @@ def log_emotion(username, role, user_input):
     }
 
     try:
-        # ← 여기부터 바꿔주세요
-        res = supabase.table('emotions_log') \
-            .insert(payload) \
+        res = supabase.table('emotions')\
+            .insert(payload)\
             .execute()
-        # ← 여기까지 (방법 1)
-        
+
         if res.error:
-            st.error(f"Insert 실패: {res.error.message}")
+            st.error("Insert 실패:")
+            st.error(res.error.message)         # Supabase‑py가 잡아준 에러 메시지
             return None
         return res.data
+
     except APIError as e:
-        st.error(f"APIError: {e.args[0]}")
-        return None
+        # 1) args
+        st.error(f"APIError.args: {e.args!r}")
+        # 2) 가능하면 response 속성
+        if hasattr(e, "response"):
+            st.error(f"Status code: {e.response.status_code}")
+            st.text("response.text:")
+            st.code(e.response.text, language="json")
+        else:
+            st.error("`e.response` 속성이 없습니다.")
+        # 3) 그리고 나서 다시 raise 해 줘야 로그에 기록됩니다.
+        raise
 
 
     # 2) 오직 role="user" 일 때만 emotions 테이블에 분석 결과 저장
