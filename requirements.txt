@@ -15,6 +15,7 @@ gdown
 supabase
 plotly
 streamlit-option-menu
+soundfile==0.13.1
 
 
 
