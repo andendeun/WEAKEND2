@@ -140,21 +140,20 @@ def main_page():
         st.session_state.active_page = "내 감정 알아보기"
 
 
-    with st.sidebar:
-        page = option_menu(
-            menu_title="",
-            options=["내 감정 알아보기", "감정 리포트", "맞춤형 컨텐츠 추천"],
-            icons=["pencil-square", "bar-chart", "heart"],
-            default_index=["내 감정 알아보기", "감정 리포트", "맞춤형 컨텐츠 추천"]
-                           .index(st.session_state.active_page),
-            orientation="vertical",
-            styles={
-                "container": {"padding":"0!important","background-color":"#fff"},
-                "icon": {"font-size":"20px"},
-                "nav-link": {"font-size":"16px","text-align":"left","margin":"0px"},
-                "nav-link-selected": {"background-color":"#e1f5fe"},
-            }
-        )
+    page = option_menu(
+        menu_title=None,
+        options=["내 감정 알아보기", "감정 리포트"],
+        icons=["pencil-square", "heart"],
+        default_index=["내 감정 알아보기", "감정 리포트"]
+                       .index(st.session_state.active_page),
+        orientation="horizontal",
+        styles={
+            "container": {"padding":"0!important", "background-color":"#f1f3f6"},
+            "nav-link": {"font-size":"16px", "padding":"0 20px"},
+            "nav-link-selected": {"background-color":"#e1f5fe", "font-weight":"bold"},
+        }
+    )
+
 
     # 1️⃣ 내 감정 알아보기
     if page == "내 감정 알아보기":
@@ -237,10 +236,12 @@ def main_page():
         )
 
     # 로그아웃
-    if st.sidebar.button("로그아웃"):
-        st.session_state.logged_in = False
-        st.session_state.page = "login"
-        st.session_state.chat_history = []
+    logout_col, _ = st.columns([1, 5])
+    with logout_col:
+        if st.button("로그아웃"):
+            st.session_state.logged_in = False
+            st.session_state.page = "login"
+            st.session_state.chat_history = []
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 3) 라우팅: 로그인 상태/페이지 분기
