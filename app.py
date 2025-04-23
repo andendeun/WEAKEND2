@@ -81,18 +81,23 @@ def login_page():
     user = st.text_input("아이디")
     passwd = st.text_input("비밀번호", type="password")
 
-    if st.button("로그인"):
-        if login(user, passwd):
-            st.session_state.logged_in = True
-            st.session_state.username = user
-            st.session_state.page = "main"          # 로그인 후 메인 페이지로 이동
-            st.success("로그인 성공! 메인 페이지로 이동합니다.")
-        else:
-            st.error("아이디 또는 비밀번호가 일치하지 않습니다.")
+    col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("로그인"):
+            if login(user, passwd):
+                st.session_state.logged_in = True
+                st.session_state.username = user
+                st.session_state.page = "main"  # 로그인 후 메인 페이지로 이동
+                st.success("로그인 성공! 메인 페이지로 이동합니다.")
+            else:
+                st.error("아이디 또는 비밀번호가 일치하지 않습니다.")
 
     st.markdown("---")
-    if st.button("회원가입"):
-        st.session_state.page = "signup"
+    # 회원가입 버튼 오른쪽 정렬
+    col1, col2 = st.columns([3,1])
+    with col2:
+        if st.button("회원가입"):
+            st.session_state.page = "signup"
 
 
 def signup_page():
@@ -214,6 +219,20 @@ def main_page():
             st.warning("로그인 후 대화를 먼저 진행해 주세요.")
             return
 
+        st.markdown("""
+        <style>
+        /* BaseWeb 탭 리스트 컨테이너 */
+        div[data-baseweb="tab-list"] {
+            display: flex !important;
+        }
+        /* 각 탭 버튼을 flex 아이템으로, 동일 너비 할당 */
+        div[data-baseweb="tab-list"] button {
+            flex: 1 1 0 !important;
+            text-align: center;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
         # ② yeji.py 의 여러 렌더 함수로 탭 구성
         tab1, tab2, tab3, tab4 = st.tabs(
             ["대시보드", "감정 트렌드", "감정 달력", "맞춤 알림"]
@@ -242,7 +261,7 @@ def main_page():
         )
 
     # 로그아웃
-    logout_col, _ = st.columns([3, 1])
+    _, logout_col = st.columns([3, 1])
     with logout_col:
         if st.button("로그아웃"):
             st.session_state.logged_in = False
