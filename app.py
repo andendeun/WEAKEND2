@@ -94,7 +94,7 @@ def login_page():
 
     st.markdown("---")
     # 회원가입 버튼 오른쪽 정렬
-    col1, col2 = st.columns([3,1])
+    col1, col2 = st.columns([2,1])
     with col2:
         if st.button("회원가입"):
             st.session_state.page = "signup"
