@@ -8,11 +8,15 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 
+# 한글폰트로 나눔고딕 사용 (Streamlit Cloud에 APT로 설치된 경로)
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-pdfmetrics.registerFont(
-    TTFont("NotoSansKR", "reports/fonts/NotoSansKR-Regular.ttf")
-)
+
+# Ubuntu 스트림릿 컨테이너 기준 경로
+SYSTEM_FONT = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
+if not os.path.isfile(SYSTEM_FONT):
+    raise FileNotFoundError(f"나눔고딕 폰트를 찾을 수 없습니다: {SYSTEM_FONT}")
+pdfmetrics.registerFont(TTFont("NanumGothic", SYSTEM_FONT))
 
 
 def get_emotion_report(login_id: str) -> pd.DataFrame:
