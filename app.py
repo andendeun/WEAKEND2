@@ -181,6 +181,7 @@ def main_page():
             log_emotion(st.session_state.username, "bot", bot_reply)
             st.session_state.chat_history.append(("user", user_input))
             st.session_state.chat_history.append(("bot", bot_reply))
+            st.session_state.chat_input = ""  # 입력창 초기화
 
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
         paired = list(zip(st.session_state.chat_history[::2],
