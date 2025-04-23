@@ -37,7 +37,7 @@ def generate_response(user_input: str) -> str:
 
     # 3) OpenAI API 호출 (trimmed 히스토리만 전달)
     response = client.chat.completions.create(
-        model="gpt-4-turbo",
+        model="gpt-3.5-turbo",
         messages=prompt_messages,
     )
 
