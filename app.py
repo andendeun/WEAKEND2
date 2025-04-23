@@ -176,22 +176,21 @@ def main_page():
         user_input = st.text_input("📝 CHAT", value=recognized_text, key="chat_input")
 
         if user_input:
-            # 1) DB에 저장, 챗 기록 처리
             log_emotion(st.session_state.username, "user", user_input)
             bot_reply = generate_response(user_input)
             log_emotion(st.session_state.username, "bot", bot_reply)
             st.session_state.chat_history.append(("user", user_input))
             st.session_state.chat_history.append(("bot", bot_reply))
-
-            # 2) 세션 상태에서 입력값 제거
+            # 입력창 초기화를 위해 세션에서 키 삭제 후 재실행
             if "chat_input" in st.session_state:
                 del st.session_state["chat_input"]
+            st.experimental_rerun()
 
-    # 3) 강제 새로고침으로 위젯 다시 생성
-    st.experimental_rerun()
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-        paired = list(zip(st.session_state.chat_history[::2],
-                          st.session_state.chat_history[1::2]))
+        paired = list(zip(
+            st.session_state.chat_history[::2],
+            st.session_state.chat_history[1::2]
+        ))
         for u_msg, b_msg in (paired):
             st.markdown(f'''
                 <div class="user-bubble-wrapper">
