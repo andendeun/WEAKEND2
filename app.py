@@ -28,8 +28,8 @@ st.markdown("""
         h3 { font-size:18px!important;text-align:center; }
         button { font-size:16px!important; }
         .chat-container { max-height:300px; overflow-y:auto; }
-        .chat-bubble { display:flex; gap:10px; align-items:flex-start; }
-        .user-bubble-wrapper { display:flex; justify-content:flex-end; }
+        .chat-bubble { display:flex; gap:10px; align-items:flex-start; margin-bottom:12px; }
+        .user-bubble-wrapper { display:flex; justify-content:flex-end; margin-bottom:12px; }
         .user-bubble { background-color:#218AFF; color:#FFF;
             padding:12px 16px; border-radius:18px 18px 0 18px;
             max-width:75%; word-break:break-word; }
@@ -48,7 +48,7 @@ for key, default in [
     ("username", ""),
     ("chat_history", []),
     ("chat_input", ""),
-    ("active_page", "내 감정 알아보기"),  # ← 이 줄을 추가
+    ("active_page", "내 감정 알아보기"),
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
@@ -101,15 +101,33 @@ def signup_page():
 
 
 def main_page():
-    if st.session_state.active_page not in ["내 감정 알아보기","감정 리포트"]:
-        st.session_state.active_page = "내 감정 알아보기"
-    page = option_menu(None, ["내 감정 알아보기","감정 리포트"],
-                       icons=["pencil-square","heart"],
-                       default_index=["내 감정 알아보기","감정 리포트"].index(st.session_state.active_page),
-                       orientation="horizontal")
+    page = option_menu(
+        None,
+        ["내 감정 알아보기","감정 리포트"],
+        icons=["pencil-square","heart"],
+        default_index=["내 감정 알아보기","감정 리포트"].index(st.session_state.active_page),
+        orientation="horizontal",
+        styles={
+            "nav-link": {"font-size": "20px", "padding": "8px 16px"},
+            "nav-link-selected": {"font-size": "20px", "padding": "8px 16px"}
+        }
+    )
 
     if page == "내 감정 알아보기":
         st.title("당신의 감정을 입력해 보세요")
+
+        # 메시지 전송 콜백 정의
+        def send_message():
+            msg = st.session_state.chat_input.strip()
+            if msg:
+                log_emotion(st.session_state.username, 'user', msg)
+                reply = generate_response(msg)
+                log_emotion(st.session_state.username, 'bot', reply)
+                st.session_state.chat_history.append(('user', msg))
+                st.session_state.chat_history.append(('bot', reply))
+            st.session_state.chat_input = ""
+
+        # 음성 파일 업로드 및 자동 전송
         audio_file = st.file_uploader("🎤 RECORD", type=["wav","mp3"])
         text = ""
         if audio_file:
@@ -121,20 +139,13 @@ def main_page():
                     try:
                         text = rec.recognize_google(data, language="ko-KR")
                         st.success(f"📝 변환된 텍스트: {text}")
+                        st.session_state.chat_input = text
+                        send_message()
                     except:
                         st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
-        # 메시지 전송 콜백 정의
-        def send_message():
-            msg = st.session_state.chat_input.strip()
-            if msg:
-                log_emotion(st.session_state.username, 'user', msg)
-                reply = generate_response(msg)
-                log_emotion(st.session_state.username, 'bot', reply)
-                st.session_state.chat_history.append(('user', msg))
-                st.session_state.chat_history.append(('bot', reply))
-            st.session_state.chat_input = ""
+
         # 입력창 및 전송 버튼
-        st.text_input("📝 CHAT", value=text, key="chat_input", on_change=lambda: None)
+        st.text_input("📝 CHAT", value=text, key="chat_input")
         st.button("전송", key="send_button", on_click=send_message)
 
         # 대화 표시
@@ -155,7 +166,8 @@ def main_page():
         st.title("감정 리포트")
         df = load_data(st.session_state.username)
         if df.empty:
-            st.warning("로그인 후 대화를 먼저 진행해 주세요."); return
+            st.warning("로그인 후 대화를 먼저 진행해 주세요.")
+            return
         tabs = st.tabs(["대시보드","감정 트렌드","감정 달력","맞춤 알림"])
         render_dashboard(df) if tabs[0] else None
         render_trend(df) if tabs[1] else None
