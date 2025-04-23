@@ -171,7 +171,7 @@ def main_page():
                         recognized_text = recognizer.recognize_google(audio_data, language="ko-KR")
                         st.success(f"📝 변환된 텍스트: {recognized_text}", key="stt_success")
                     except:
-                        st.warning("음성 인식 실패. 텍스트로 입력해주세요.", key="stt_warning")
+                        st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
 
         user_input = st.text_input("📝 CHAT", value=recognized_text, key="chat_input")
 
