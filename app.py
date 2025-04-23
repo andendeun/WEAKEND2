@@ -90,22 +90,19 @@ def login_page():
     user = st.text_input("아이디")
     passwd = st.text_input("비밀번호", type="password")
 
-    # ① 버튼은 오른쪽(col2)에만
+    # ① 버튼만 오른쪽 열(col2)에
     col1, col2 = st.columns([3, 1])
-    with col2:
-        login_clicked = st.button("로그인")
+    login_clicked = col2.button("로그인")
 
-    # ② 결과 메시지는 반드시 col1 컨텍스트 안에!
+    # ② 메시지는 반드시 왼쪽 열(col1)에
     if login_clicked:
         if login(user, passwd):
-            with col1:
-                st.success("로그인 성공! 메인 페이지로 이동합니다.")
             st.session_state.logged_in = True
-            st.session_state.username = user
-            st.session_state.page = "main"
+            st.session_state.username  = user
+            st.session_state.page      = "main"
+            col1.success("로그인 성공! 메인 페이지로 이동합니다.")
         else:
-            with col1:
-                st.error("아이디 또는 비밀번호가 일치하지 않습니다.")
+            col1.error("아이디 또는 비밀번호가 일치하지 않습니다.")
 
 
     st.markdown("---")
