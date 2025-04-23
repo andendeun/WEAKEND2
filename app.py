@@ -172,68 +172,57 @@ def main_page():
             st.session_state.last_audio = cur_audio
             st.session_state.audio_processed = False
 
-        # ─── 음성 인식 시도 ─────────────────────────────────
+        # ─── 1) 음성 업로드 & 자동 처리 플래그 초기화 ─────────────────
+        audio_file = st.file_uploader("🎤 RECORD ", type=["wav","mp3"])
+        if "last_audio" not in st.session_state:
+            st.session_state.last_audio = None
+            st.session_state.audio_processed = False
+
+        # 새 업로드 감지
+        cur_audio = audio_file.name if audio_file else None
+        if cur_audio != st.session_state.last_audio:
+            st.session_state.last_audio = cur_audio
+            st.session_state.audio_processed = False
+
+        # 음성 인식
         recognized_text = ""
         if audio_file:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
                 tmp.write(audio_file.read())
-                recognizer = sr.Recognizer()
+                r = sr.Recognizer()
                 with sr.AudioFile(tmp.name) as src:
-                    audio_data = recognizer.record(src)
+                    audio_data = r.record(src)
                     try:
-                        recognized_text = recognizer.recognize_google(audio_data, language="ko-KR")
+                        recognized_text = r.recognize_google(audio_data, language="ko-KR")
                         st.success(f"📝 변환된 텍스트: {recognized_text}")
                     except:
                         st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
 
-        # ─── 음성 텍스트 자동 처리 (한 번만) ─────────────────
+        # 음성 → 챗봇 자동 호출 (한번만)
         if recognized_text and not st.session_state.audio_processed:
-            input_text = recognized_text
-            # 사용자→봇 대화 기록
-            log_emotion(st.session_state.username, "user", input_text)
-            bot_reply = generate_response(input_text)
+            user_msg = recognized_text
+            log_emotion(st.session_state.username, "user", user_msg)
+            bot_reply = generate_response(user_msg)
             log_emotion(st.session_state.username, "bot", bot_reply)
 
-            st.session_state.chat_history.append(("user", input_text))
+            st.session_state.chat_history.append(("user", user_msg))
             st.session_state.chat_history.append(("bot", bot_reply))
-
-            # 플래그 켜서 중복 방지
             st.session_state.audio_processed = True
 
-        # ─── 수동 채팅 입력 ─────────────────────────────────
-        # 1) 텍스트 입력 박스
-        user_input = st.text_input("📝 CHAT", key="chat_input")
-
-        # 2) 전송 버튼 클릭 시에만 state 수정
-        if st.button("전송"):
-            input_text = user_input.strip()
-            if input_text:
-                # 기록 & 응답
-                log_emotion(st.session_state.username, "user", input_text)
-                bot_reply = generate_response(input_text)
-                log_emotion(st.session_state.username, "bot", bot_reply)
-
-                st.session_state.chat_history.append(("user", input_text))
-                st.session_state.chat_history.append(("bot", bot_reply))
-
-            # **버튼 콜백 안이므로 안전하게 초기화**
-            st.session_state.chat_input = ""
-            
-        # ─── 3) 폼을 이용한 채팅 입력 ────────────────────
+        # ─── 2) 채팅 폼 ─────────────────────────────────────────────
         with st.form("chat_form", clear_on_submit=True):
-            user_input = st.text_input("📝 CHAT")
+            chat_text = st.text_input("📝 CHAT", placeholder="메시지를 입력하세요")
             submitted = st.form_submit_button("전송")
 
-        if submitted and user_input:
-            # **폼이 제출된 순간**에만 실행되므로 session_state 수정 OK
-            log_emotion(st.session_state.username, "user", user_input)
-            bot_reply = generate_response(user_input)
+        if submitted and chat_text:
+            log_emotion(st.session_state.username, "user", chat_text)
+            bot_reply = generate_response(chat_text)
             log_emotion(st.session_state.username, "bot", bot_reply)
 
-            st.session_state.chat_history.append(("user", user_input))
+            st.session_state.chat_history.append(("user", chat_text))
             st.session_state.chat_history.append(("bot", bot_reply))
 
-        # ─── 대화 내용 렌더링 ─────────────────────────────
+        # ─── 3) 대화 내역 렌더링 ─────────────────────────────────────
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
         paired = list(zip(st.session_state.chat_history[::2],
                         st.session_state.chat_history[1::2]))
@@ -248,7 +237,6 @@ def main_page():
                 </div>
             ''', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
-
 
 
 
