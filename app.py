@@ -186,7 +186,7 @@ def main_page():
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
         paired = list(zip(st.session_state.chat_history[::2],
                           st.session_state.chat_history[1::2]))
-        for u_msg, b_msg in reversed(paired):
+        for u_msg, b_msg in (paired):
             st.markdown(f'''
                 <div class="user-bubble-wrapper">
                   <div class="user-bubble">{u_msg[1]}</div>
