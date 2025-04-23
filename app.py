@@ -158,50 +158,49 @@ def main_page():
     # 1️⃣ 내 감정 알아보기
     if page == "내 감정 알아보기":
         st.title("당신의 감정을 입력해 보세요")
-        audio_file = st.file_uploader("🎤 RECORD ", type=["wav","mp3"])
-        recognized_text = ""
 
+        # 메시지 전송 콜백 정의
+        def send_message():
+            msg = st.session_state.chat_input.strip()
+            if msg:
+                log_emotion(st.session_state.username, 'user', msg)
+                reply = generate_response(msg)
+                log_emotion(st.session_state.username, 'bot', reply)
+                st.session_state.chat_history.append(('user', msg))
+                st.session_state.chat_history.append(('bot', reply))
+            st.session_state.chat_input = ""
+
+                # 음성 파일 업로드 및 자동 전송
+        audio_file = st.file_uploader("🎤 RECORD", type=["wav","mp3"])
+        text = ""
         if audio_file:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
                 tmp.write(audio_file.read())
-                recognizer = sr.Recognizer()
+                rec = sr.Recognizer()
                 with sr.AudioFile(tmp.name) as src:
-                    audio_data = recognizer.record(src)
+                    data = rec.record(src)
                     try:
-                        recognized_text = recognizer.recognize_google(audio_data, language="ko-KR")
-                        st.success(f"📝 변환된 텍스트: {user_input}")
+                        text = rec.recognize_google(data, language="ko-KR")
+                        st.success(f"📝 변환된 텍스트: {text}")
                     except:
                         st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
-                        
-        # 1) 텍스트 입력창에 key만 설정 (기본값으로 recognized_text)
-        user_input = st.text_input("📝 CHAT", value=recognized_text, key="chat_input")
 
-        # 2) 전송 버튼을 눌렀을 때만 처리
-        if st.button("전송"):
-            # 2-1) 유저 메시지 로깅 및 챗봇 응답
-            log_emotion(st.session_state.username, "user", user_input)
-            bot_reply = generate_response(user_input)
-            log_emotion(st.session_state.username, "bot", bot_reply)
-            st.session_state.chat_history.append(("user", user_input))
-            st.session_state.chat_history.append(("bot", bot_reply))
+        # 텍스트 입력창: 음성 인식 후 자동 전송 콜백만 지정
+        st.text_input("📝 CHAT", key="chat_input", on_change=send_message)
+        st.button("전송", key="send_button", on_click=send_message)
 
-            # 2-2) 입력창 비우기
-            st.session_state.chat_input = ""
-
-        # 3) 대화 내역 렌더링
+        # 대화 표시
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-        paired = list(zip(st.session_state.chat_history[::2],
-                        st.session_state.chat_history[1::2]))
-        for u_msg, b_msg in paired:
-            st.markdown(f'''
+        for u, b in zip(st.session_state.chat_history[::2], st.session_state.chat_history[1::2]):
+            st.markdown(f"""
                 <div class="user-bubble-wrapper">
-                <div class="user-bubble">{u_msg[1]}</div>
+                  <div class="user-bubble">{u[1]}</div>
                 </div>
                 <div class="chat-bubble">
-                <img src="https://cdn-icons-png.flaticon.com/512/8229/8229494.png" width="24" />
-                <div class="bot-bubble">{b_msg[1]}</div>
+                  <img src="https://cdn-icons-png.flaticon.com/512/8229/8229494.png" width="24" />
+                  <div class="bot-bubble">{b[1]}</div>
                 </div>
-            ''', unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 
