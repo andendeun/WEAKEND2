@@ -95,17 +95,17 @@ def login_page():
     with col2:
         login_clicked = st.button("로그인")
 
-    # ② 클릭 후 메시지는 왼쪽(col1)에서만
+    # ② 결과 메시지는 반드시 col1 컨텍스트 안에!
     if login_clicked:
         if login(user, passwd):
+            with col1:
+                st.success("로그인 성공! 메인 페이지로 이동합니다.")
             st.session_state.logged_in = True
             st.session_state.username = user
             st.session_state.page = "main"
-            # ← 이 줄만 바꿔서
-            col1.success("로그인 성공! 메인 페이지로 이동합니다.")
         else:
-            # ← 이 줄만 바꿔서
-            col1.error("아이디 또는 비밀번호가 일치하지 않습니다.")
+            with col1:
+                st.error("아이디 또는 비밀번호가 일치하지 않습니다.")
 
 
     st.markdown("---")
