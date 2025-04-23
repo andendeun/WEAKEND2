@@ -218,8 +218,22 @@ def main_page():
 
             # **버튼 콜백 안이므로 안전하게 초기화**
             st.session_state.chat_input = ""
+            
+        # ─── 3) 폼을 이용한 채팅 입력 ────────────────────
+        with st.form("chat_form", clear_on_submit=True):
+            user_input = st.text_input("📝 CHAT")
+            submitted = st.form_submit_button("전송")
 
-        # ─── 대화 내용 렌더링 ─────────────────────────────────
+        if submitted and user_input:
+            # **폼이 제출된 순간**에만 실행되므로 session_state 수정 OK
+            log_emotion(st.session_state.username, "user", user_input)
+            bot_reply = generate_response(user_input)
+            log_emotion(st.session_state.username, "bot", bot_reply)
+
+            st.session_state.chat_history.append(("user", user_input))
+            st.session_state.chat_history.append(("bot", bot_reply))
+
+        # ─── 대화 내용 렌더링 ─────────────────────────────
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
         paired = list(zip(st.session_state.chat_history[::2],
                         st.session_state.chat_history[1::2]))
@@ -234,6 +248,11 @@ def main_page():
                 </div>
             ''', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
+
+
+
+
+
 
     # 2️⃣ 감정 리포트
     elif page == "감정 리포트":
