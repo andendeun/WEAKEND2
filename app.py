@@ -173,8 +173,7 @@ def main_page():
                     except:
                         st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
 
-        if not user_input:
-            user_input = st.text_input("📝 CHAT")
+        user_input = st.text_input("📝 CHAT", value=recognized_text, key="chat_input")
 
         if user_input:
             log_emotion(st.session_state.username, "user", user_input)
