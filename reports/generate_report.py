@@ -8,6 +8,13 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+pdfmetrics.registerFont(
+    TTFont("NotoSansKR", "reports/fonts/NotoSansKR-Regular.ttf")
+)
+
+
 def get_emotion_report(login_id: str) -> pd.DataFrame:
     """
     login_id로 users → chat_log → emotions → middle_categories를 조회해,
@@ -78,9 +85,9 @@ def create_pdf_report(login_id: str) -> bytes:
     df = load_data(login_id)
 
     # Title 페이지
-    pdf.setFont("Helvetica-Bold", 24)
+    pdf.setFont("NotoSansKR", 24)  
     pdf.drawCentredString(width/2, height-80, f"{login_id}님의 감정 리포트")
-    pdf.setFont("Helvetica", 12)
+    pdf.setFont("NotoSansKR", 12)
     pdf.drawString(50, height-110, f"생성일: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     pdf.showPage()
 
@@ -103,14 +110,11 @@ def create_pdf_report(login_id: str) -> bytes:
         img_bytes = fig.to_image(format="png", engine="kaleido")
         img = ImageReader(io.BytesIO(img_bytes))
 
-        # 2) 원본 이미지 크기(px)로 비율 계산
+        # 실제 PNG 크기로 비율 계산
         orig_w, orig_h = img.getSize()
         aspect = orig_h / orig_w
 
-        # 3) A4 여백(50pt) 기준 최대 크기
         max_w, max_h = width - 100, height - 100
-
-        # 4) 비율에 맞춰 크기 결정
         w = max_w
         h = w * aspect
         if h > max_h:
