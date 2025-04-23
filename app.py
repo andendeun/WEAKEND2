@@ -169,22 +169,28 @@ def main_page():
                     audio_data = recognizer.record(src)
                     try:
                         recognized_text = recognizer.recognize_google(audio_data, language="ko-KR")
-                        st.success(f"📝 변환된 텍스트: {recognized_text}", key="stt_success")
+                        st.success(f"📝 변환된 텍스트: {recognized_text}")
                     except:
                         st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
 
-        user_input = st.text_input("📝 CHAT", value=recognized_text, key="chat_input")
+        # 2) 텍스트 입력 박스
+        user_input = st.text_input("📝 CHAT", key="chat_input")
 
-        if user_input:
-            log_emotion(st.session_state.username, "user", user_input)
-            bot_reply = generate_response(user_input)
+        # 3) 실제 사용할 입력 결정
+        input_text = recognized_text or user_input
+
+        if input_text:
+            # 기록 & 응답
+            log_emotion(st.session_state.username, "user", input_text)
+            bot_reply = generate_response(input_text)
             log_emotion(st.session_state.username, "bot", bot_reply)
-            st.session_state.chat_history.append(("user", user_input))
+
+            st.session_state.chat_history.append(("user", input_text))
             st.session_state.chat_history.append(("bot", bot_reply))
-            # 입력창 초기화를 위해 세션에서 키 삭제 후 재실행
-            if "chat_input" in st.session_state:
-                del st.session_state["chat_input"]
-            st.experimental_rerun()
+
+            # 입력란 비우기
+            st.session_state.chat_input = ""
+            
 
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
         paired = list(zip(
