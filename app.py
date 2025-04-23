@@ -50,7 +50,7 @@ st.markdown("""
         }
 
         .bot-bubble {
-            background-color: ##f2f2f2;  /* 짙은 회색 톤 */
+            background-color: #f2f2f2;  /* 짙은 회색 톤 */
             padding: 12px 16px;
             border-radius: 18px 18px 18px 0;
             max-width: 75%;
@@ -159,8 +159,7 @@ def main_page():
     if page == "내 감정 알아보기":
         st.title("당신의 감정을 입력해 보세요")
         audio_file = st.file_uploader("🎤 RECORD ", type=["wav","mp3"])
-        user_input = ""
-
+        recognized_text = ""
         if audio_file:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
                 tmp.write(audio_file.read())
@@ -168,25 +167,29 @@ def main_page():
                 with sr.AudioFile(tmp.name) as src:
                     audio_data = recognizer.record(src)
                     try:
-                        user_input = recognizer.recognize_google(audio_data, language="ko-KR")
+                        recognized_text = recognizer.recognize_google(audio_data, language="ko-KR")
                         st.success(f"📝 변환된 텍스트: {user_input}")
                     except:
                         st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
 
-        if not user_input:
-            user_input = st.text_input("📝 CHAT")
+        user_input = st.text_input("📝 CHAT", value=recognized_text, key="chat_input")
 
         if user_input:
+            # 유저 메시지 로깅 및 챗봇 응답
             log_emotion(st.session_state.username, "user", user_input)
             bot_reply = generate_response(user_input)
             log_emotion(st.session_state.username, "bot", bot_reply)
             st.session_state.chat_history.append(("user", user_input))
             st.session_state.chat_history.append(("bot", bot_reply))
 
+            # 메시지 전송 후 입력창 비우기
+            st.session_state.chat_input = ""
+
+
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
         paired = list(zip(st.session_state.chat_history[::2],
                           st.session_state.chat_history[1::2]))
-        for u_msg, b_msg in reversed(paired):
+        for u_msg, b_msg in (paired):
             st.markdown(f'''
                 <div class="user-bubble-wrapper">
                   <div class="user-bubble">{u_msg[1]}</div>
