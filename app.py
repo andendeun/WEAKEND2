@@ -92,14 +92,17 @@ def login_page():
 
     col1, col2 = st.columns([3, 1])
     with col2:
-        if st.button("로그인"):
-            if login(user, passwd):
-                st.session_state.logged_in = True
-                st.session_state.username = user
-                st.session_state.page = "main"  # 로그인 후 메인 페이지로 이동
-                st.success("로그인 성공! 메인 페이지로 이동합니다.")
-            else:
-                st.error("아이디 또는 비밀번호가 일치하지 않습니다.")
+        login_clicked = st.button("로그인")
+
+    # 클릭 후 결과 메시지는 전역에서
+    if login_clicked:
+        if login(user, passwd):
+            st.session_state.logged_in = True
+            st.session_state.username = user
+            st.session_state.page = "main"  # 로그인 후 메인 페이지로 이동
+            st.success("로그인 성공! 메인 페이지로 이동합니다.")
+        else:
+            st.error("아이디 또는 비밀번호가 일치하지 않습니다.")
 
     st.markdown("---")
     # 회원가입 버튼 오른쪽 정렬
