@@ -90,19 +90,26 @@ def login_page():
     user = st.text_input("아이디")
     passwd = st.text_input("비밀번호", type="password")
 
+    # ① 컬럼 생성
     col1, col2 = st.columns([3, 1])
+
+    # ② 버튼은 오른쪽(col2)에
     with col2:
         login_clicked = st.button("로그인")
 
-    # 클릭 후 결과 메시지는 전역에서
+    # ③ 로그인 처리 후 메시지는 왼쪽(col1)에
     if login_clicked:
         if login(user, passwd):
             st.session_state.logged_in = True
             st.session_state.username = user
             st.session_state.page = "main"
-            st.success("로그인 성공! 메인 페이지로 이동합니다.")
+            # 성공 메시지는 전역이 아니라 상단 컬럼밖으로 나왔을 때도 좌측으로 보이지만,
+            # 더 확실하게 하고 싶다면 col1.success 로도 가능합니다:
+            col1.success("로그인 성공! 메인 페이지로 이동합니다.")
         else:
-            st.error("아이디 또는 비밀번호가 일치하지 않습니다.")
+            # 에러 메시지는 명시적으로 왼쪽 컬럼에
+            col1.error("아이디 또는 비밀번호가 일치하지 않습니다.")
+
 
     st.markdown("---")
 
@@ -114,7 +121,7 @@ def login_page():
     if signup_clicked:
         st.session_state.page = "signup"
 
-        
+
 def signup_page():
     st.markdown("<h1>회원가입</h1>", unsafe_allow_html=True)
 
