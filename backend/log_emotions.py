@@ -9,13 +9,20 @@ def log_emotion(login_id: str, role: str, message: str) -> None:
         raise ValueError(f"Unknown login_id: {login_id}")
 
     # 1) chat_log에는 user/bot 구분 없이 모두 저장
-    chat_ins = supabase.table("chat_log").insert({
-        "userid":       user_id,
-        "chat_time":    datetime.now().isoformat(),
-        "chat_content": message,
-        "chat_role":    role
-    }).execute()
+    try:
+        chat_ins = supabase.table("chat_log").insert({
+            "userid":       user_id,
+            "chat_time":    datetime.now().isoformat(),
+            "chat_content": message,
+            "chat_role":    role
+            }).execute()
+    except Exception as e:
+        print(f"[Warning] chat_log insert failed: {e}")
+        return
+    
+     # chat_ins에서 생성된 chat_id를 꺼내 옵니다
     chat_id = chat_ins.data[0]["chat_id"]
+
 
     # 2) 오직 role="user" 일 때만 emotions 테이블에 분석 결과 저장
     if role == "user":
@@ -25,10 +32,13 @@ def log_emotion(login_id: str, role: str, message: str) -> None:
             .eq("middle_categoryname", label)\
             .single()\
             .execute().data
-        supabase.table("emotions").insert({
-            "chat_id":            chat_id,
-            "main_category_id":   cat["main_category_id"],
-            "middle_category_id": cat["middle_category_id"],
-            "emotion_score":      score,
-            "analysis_date":      date.today().isoformat()
-        }).execute()
+        try:
+            supabase.table("emotions").insert({
+                "chat_id":            chat_id,
+                "main_category_id":   cat["main_category_id"],
+                "middle_category_id": cat["middle_category_id"],
+                "emotion_score":      score,
+                "analysis_date":      date.today().isoformat()
+            }).execute()
+        except Exception as e:
+            print(f"[Warning] emotions insert failed: {e}")

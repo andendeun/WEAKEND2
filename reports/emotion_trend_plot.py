@@ -178,7 +178,7 @@ def render_trend(df: pd.DataFrame):
         # 오늘의 주요 키워드
         texts = df_today['text'].tolist()
         top_kw = extract_keywords(texts, top_n=5)
-        st.subheader("📌 오늘의 주요 키워드")
+        st.markdown("<h3 style='text-align:left;'>📌 오늘의 주요 키워드</h3>", unsafe_allow_html=True)
         for kw, cnt in top_kw:
             st.write(f"- **{kw}** ({cnt}회)")
 
@@ -257,10 +257,16 @@ def render_alert(df: pd.DataFrame):
     else:
         st.success('현재 특별한 경고가 없습니다. 🙂'); return
 
+    color_map = {'[경고]':'red','[주의]':'orange','[주의 지속]':'red'}
+    st.markdown(
+        f"<span style='color:{color_map[level]}; font-weight:bold'>{level} 알림</span>",
+        unsafe_allow_html=True
+        )
+
     st.markdown(f"**{level} 알림**")
     for m in msgs:
         st.write(f"- {m}")
     if show_rec:
-        st.subheader('✨ 추천 콘텐츠')
+        st.markdown("<h3 style='text-align:left;'>✨ 추천 콘텐츠</h3>", unsafe_allow_html=True)
         st.write("- 오늘은 잠시 눈을 감고 깊게 숨을 쉬어볼까요?")
         st.write("- 좋아하는 음악 한 곡을 들어보세요.")
