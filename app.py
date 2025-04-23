@@ -159,8 +159,21 @@ def main_page():
     if page == "내 감정 알아보기":
         st.title("당신의 감정을 입력해 보세요")
         audio_file = st.file_uploader("🎤 RECORD ", type=["wav","mp3"])
-        recognized_text = ""
 
+        # ─── 세션 플래그 초기화 ─────────────────────────────
+        if "last_audio" not in st.session_state:
+            st.session_state.last_audio = None
+        if "audio_processed" not in st.session_state:
+            st.session_state.audio_processed = False
+
+        # ─── 새 오디오 업로드 감지 ───────────────────────────
+        cur_audio = audio_file.name if audio_file else None
+        if cur_audio != st.session_state.last_audio:
+            st.session_state.last_audio = cur_audio
+            st.session_state.audio_processed = False
+
+        # ─── 음성 인식 시도 ─────────────────────────────────
+        recognized_text = ""
         if audio_file:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
                 tmp.write(audio_file.read())
@@ -173,37 +186,46 @@ def main_page():
                     except:
                         st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
 
-        # 2) 텍스트 입력 + 버튼
+        # ─── 음성 텍스트 자동 처리 (한 번만) ─────────────────
+        if recognized_text and not st.session_state.audio_processed:
+            input_text = recognized_text
+            # 사용자→봇 대화 기록
+            log_emotion(st.session_state.username, "user", input_text)
+            bot_reply = generate_response(input_text)
+            log_emotion(st.session_state.username, "bot", bot_reply)
+
+            st.session_state.chat_history.append(("user", input_text))
+            st.session_state.chat_history.append(("bot", bot_reply))
+
+            # 플래그 켜서 중복 방지
+            st.session_state.audio_processed = True
+
+        # ─── 수동 채팅 입력 ─────────────────────────────────
         user_input = st.text_input("📝 CHAT", key="chat_input")
         if st.button("전송"):
-            # 음성→텍스트 우선, 아니면 타이핑
-            input_text = recognized_text or user_input
+            input_text = user_input.strip()
             if input_text:
-                # 기록 & 응답
                 log_emotion(st.session_state.username, "user", input_text)
                 bot_reply = generate_response(input_text)
                 log_emotion(st.session_state.username, "bot", bot_reply)
 
                 st.session_state.chat_history.append(("user", input_text))
                 st.session_state.chat_history.append(("bot", bot_reply))
+            # 입력란 초기화
+            st.session_state.chat_input = ""
 
-                # 콜백 안이므로 안전하게 지울 수 있음
-                st.session_state.chat_input = ""
-                
-
+        # ─── 대화 내용 렌더링 ─────────────────────────────────
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-        paired = list(zip(
-            st.session_state.chat_history[::2],
-            st.session_state.chat_history[1::2]
-        ))
-        for u_msg, b_msg in (paired):
+        paired = list(zip(st.session_state.chat_history[::2],
+                        st.session_state.chat_history[1::2]))
+        for u_msg, b_msg in reversed(paired):
             st.markdown(f'''
                 <div class="user-bubble-wrapper">
-                  <div class="user-bubble">{u_msg[1]}</div>
+                <div class="user-bubble">{u_msg[1]}</div>
                 </div>
                 <div class="chat-bubble">
-                  <img src="https://cdn-icons-png.flaticon.com/512/8229/8229494.png" width="24" />
-                  <div class="bot-bubble">{b_msg[1]}</div>
+                <img src="https://cdn-icons-png.flaticon.com/512/8229/8229494.png" width="24" />
+                <div class="bot-bubble">{b_msg[1]}</div>
                 </div>
             ''', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
