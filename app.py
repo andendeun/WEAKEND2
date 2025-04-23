@@ -42,8 +42,14 @@ st.markdown("""
 # ─────────────────────────────────────────────────────────────────────────────
 # 1) 세션 상태 초기화
 # ─────────────────────────────────────────────────────────────────────────────
-for key, default in [("page","login"),("logged_in",False),
-                     ("username",""),("chat_history",[]),("chat_input","")]:
+for key, default in [
+    ("page", "login"),
+    ("logged_in", False),
+    ("username", ""),
+    ("chat_history", []),
+    ("chat_input", ""),
+    ("active_page", "내 감정 알아보기"),  # ← 이 줄을 추가
+]:
     if key not in st.session_state:
         st.session_state[key] = default
 
