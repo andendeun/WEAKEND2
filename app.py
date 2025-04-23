@@ -201,17 +201,22 @@ def main_page():
             st.session_state.audio_processed = True
 
         # ─── 수동 채팅 입력 ─────────────────────────────────
+        # 1) 텍스트 입력 박스
         user_input = st.text_input("📝 CHAT", key="chat_input")
+
+        # 2) 전송 버튼 클릭 시에만 state 수정
         if st.button("전송"):
             input_text = user_input.strip()
             if input_text:
+                # 기록 & 응답
                 log_emotion(st.session_state.username, "user", input_text)
                 bot_reply = generate_response(input_text)
                 log_emotion(st.session_state.username, "bot", bot_reply)
 
                 st.session_state.chat_history.append(("user", input_text))
                 st.session_state.chat_history.append(("bot", bot_reply))
-            # 입력란 초기화
+
+            # **버튼 콜백 안이므로 안전하게 초기화**
             st.session_state.chat_input = ""
 
         # ─── 대화 내용 렌더링 ─────────────────────────────────
