@@ -5,7 +5,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import calendar
 from collections import Counter
-from reports.generate_report import get_emotion_report
 
 # --- 키워드 추출 함수 ---
 def extract_keywords(texts, top_n=5):
@@ -17,9 +16,6 @@ def extract_keywords(texts, top_n=5):
     return Counter(words).most_common(top_n)
 
 
-
-
-
 # --- 데이터 로드 및 전처리 ---
 @st.cache_data
 def load_data(login_id: str) -> pd.DataFrame:
@@ -27,12 +23,13 @@ def load_data(login_id: str) -> pd.DataFrame:
     DB에서 감정 로그를 가져와서 분석용 DataFrame으로 변환합니다.
     Columns: ['date', 'emotion', 'text', 'category']
     """
-    # 1) Supabase에서 리포트 불러오기
+    # 여기서만 동적 import
+    from reports.generate_report import get_emotion_report
     df = get_emotion_report(login_id)
+
     if df.empty:
         return pd.DataFrame()
 
-    # 2) 컬럼명 통일 (generate_report에서 반환하는 컬럼에 맞춰 조정)
     df = df.rename(columns={
         'analysis_date': 'date',
         '분석 날짜':     'date',
@@ -41,14 +38,9 @@ def load_data(login_id: str) -> pd.DataFrame:
         'chat_content':        'text'
     })
 
-    # 3) 날짜 타입 변환
     df['date'] = pd.to_datetime(df['date'])
-
-    # 4) 텍스트 컬럼 보장
     if 'text' not in df.columns:
         df['text'] = ''
-
-    # 5) 긍정/중립/부정 카테고리 매핑
     df['category'] = df['emotion'].apply(
         lambda e: '긍정' if e=='긍정'
                   else ('중립' if e=='중립' else '부정')
@@ -56,26 +48,18 @@ def load_data(login_id: str) -> pd.DataFrame:
     return df
 
 
-
-
-
 # --- 대시보드: Plotly Pie 차트 + 메트릭 ---
 def render_dashboard(df: pd.DataFrame):
     if df.empty:
         st.info("분석할 감정 데이터가 없습니다.")
         return
-    
 
-    # 1) 최빈 감정 → score (1~3)
     mood      = df['category'].mode().iloc[0]
     score_map = {'부정':1, '중립':2, '긍정':3}
     val       = score_map[mood]
-
-    # 2) 눈금 이모티콘
     emoji_map = {'부정':'☹️','중립':'😐','긍정':'😊'}
     ticks     = [emoji_map['부정'], emoji_map['중립'], emoji_map['긍정']]
 
-    # 3) 파스텔 그라데이션 스텝 생성 (빨강→초록을 화이트와 섞어 부드럽게)
     import numpy as np
     n_steps = 60
     steps = []
@@ -93,7 +77,6 @@ def render_dashboard(df: pd.DataFrame):
         end   = 1 + (3 - 1) * (i+1) / n_steps
         steps.append({'range':[start, end], 'color': color})
 
-    # 4) 게이지 차트
     fig = go.Figure(go.Indicator(
         mode="gauge",
         value=val,
@@ -115,7 +98,6 @@ def render_dashboard(df: pd.DataFrame):
         }
     ))
 
-    # 5) 레이블과 메트릭
     fig.update_layout(
         title="▶ 감정 게이지",
         height=600,
@@ -130,15 +112,11 @@ def render_dashboard(df: pd.DataFrame):
     )
     st.plotly_chart(fig, use_container_width=False)
 
-    # 6) 긍정/중립/부정 비율 메트릭
     counts = df['category'].value_counts(normalize=True).mul(100).round(1)
     c1, c2, c3 = st.columns(3)
     c1.metric("😊 긍정", f"{counts.get('긍정',0)}%")
     c2.metric("😐 중립", f"{counts.get('중립',0)}%")
     c3.metric("☹️ 부정", f"{counts.get('부정',0)}%")
-
-
-
 
 
 
@@ -204,9 +182,6 @@ def render_trend(df: pd.DataFrame):
 
 
 
-
-
-
 # --- 감정 달력 ---
 def render_calendar(df: pd.DataFrame):
     years = sorted(df['date'].dt.year.unique())
@@ -227,9 +202,6 @@ def render_calendar(df: pd.DataFrame):
             cal_df.iat[i,j] = f"{d} {emap.get(dom.get(d,''),'')}" if d else ''
     cal_df = cal_df.loc[:, (cal_df!='').any(axis=0)]
     st.table(cal_df)
-
-
-
 
 
 
@@ -270,3 +242,71 @@ def render_alert(df: pd.DataFrame):
         st.markdown("<h3 style='text-align:left;'>✨ 추천 콘텐츠</h3>", unsafe_allow_html=True)
         st.write("- 오늘은 잠시 눈을 감고 깊게 숨을 쉬어볼까요?")
         st.write("- 좋아하는 음악 한 곡을 들어보세요.")
+
+
+
+def build_dashboard_fig(df):
+    mood      = df['category'].mode().iloc[0]
+    score_map = {'부정':1, '중립':2, '긍정':3}
+    val       = score_map[mood]
+    emoji_map = {'부정':'☹️','중립':'😐','긍정':'😊'}
+    ticks     = [emoji_map['부정'], emoji_map['중립'], emoji_map['긍정']]
+
+    steps = []
+    n_steps = 60
+    for i, t in enumerate(np.linspace(0,1,n_steps)):
+        r = int(255*(1-t)); g = int(255*t)
+        pastel_r = int((r+255)/2); pastel_g = int((g+255)/2)
+        color = f"rgba({pastel_r},{pastel_g},128,1)"
+        start = 1 + (3-1)*i/n_steps
+        end   = 1 + (3-1)*(i+1)/n_steps
+        steps.append({'range':[start,end],'color':color})
+
+    fig = go.Figure(go.Indicator(
+        mode="gauge", value=val,
+        gauge={
+            'axis': {'range':[1,3],'tickmode':'array','tickvals':[1,2,3],'ticktext':ticks,'tickfont':{'size':30}},
+            'bar':{'color':'black','thickness':0.2},
+            'steps':steps,
+            'threshold':{'line':{'color':'black','width':4},'thickness':0.8,'value':val}
+        }
+    ))
+    fig.update_layout(
+        title="▶ 감정 게이지",
+        height=600, width=350, autosize=False,
+        margin={'t':30,'b':10,'l':0,'r':0},
+        annotations=[dict(x=1.5,y=-0.15,xref='x',yref='paper',
+                          text="감정 게이지",showarrow=False,font={'size':20,'color':'#666'})]
+    )
+    return fig
+
+def build_trend_fig(df):
+    # render_trend 내부에서 fig 생성 부분만 옮겨서 반환
+    import plotly.express as px
+    # 날짜 필터링 없이 전체 기간 차트 그리기 로직 예시
+    agg = df.groupby([df['date'].dt.date, 'emotion']).size().reset_index(name='count')
+    pivot = agg.pivot(index='date', columns='emotion', values='count').fillna(0)
+    ratio = pivot.div(pivot.sum(axis=1), axis=0).reset_index().melt(
+        id_vars='date', var_name='emotion', value_name='ratio'
+    )
+    fig = px.line(ratio, x='date', y='ratio', color='emotion', markers=True,
+                  labels={'date':'기간','ratio':'비율'}, title='▶ 감정 흐름')
+    fig.update_yaxes(tickformat=".0%")
+    return fig
+
+def build_calendar_fig(df):
+    # render_calendar 로직에서 테이블 대신 캘린더 차트를 그려주는 간단한 예시
+    import plotly.figure_factory as ff
+    dates = df['date'].dt.date
+    fig = ff.create_gantt([{'Task': str(d), 'Start': d, 'Finish': d} for d in dates])
+    return fig
+
+def build_alert_fig(df):
+    # render_alert 내부 로직을 재활용해서 간단한 막대그래프로 빈도 표시
+    daily = df.groupby(df['date'].dt.date)['category'] \
+              .apply(lambda s:(s=='부정').mean()) \
+              .reset_index(name='neg_ratio')
+    import plotly.express as px
+    fig = px.bar(daily, x='date', y='neg_ratio',
+                 title='▶ 부정 감정 비율 알림', labels={'neg_ratio':'부정 비율','date':'날짜'})
+    return fig
