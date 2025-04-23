@@ -23,9 +23,10 @@ st.markdown("""
         .block-container { max-width: 414px; height: 896px; overflow-y: auto;
             margin: 40px auto; background-color: white; border: 1px solid #ddd;
             border-radius: 20px; padding: 30px 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
+        /* 페이지 배경색 변경 */
         body { background-color: white; }
-        h1 { font-size:28px!important;text-align:center; }
-        h3 { font-size:18px!important;text-align:center; }
+        h1 { font-size:28px!important; text-align:center; }
+        h3 { font-size:18px!important; text-align:center; }
         button { font-size:16px!important; }
         .chat-container { max-height:300px; overflow-y:auto; }
         .chat-bubble { display:flex; gap:10px; align-items:flex-start; margin-bottom:12px; }
@@ -108,7 +109,8 @@ def main_page():
         default_index=["내 감정 알아보기","감정 리포트"].index(st.session_state.active_page),
         orientation="horizontal",
         styles={
-            "nav-link": {"font-size": "20px", "padding": "8px 16px"},
+            # 메뉴 글씨 크기 축소
+            "nav-link": {"font-size": "16px", "padding": "6px 12px"},
             "nav-link-selected": {"font-size": "16px", "padding": "6px 12px", "background-color": "#f2f2f2"}
         }
     )
