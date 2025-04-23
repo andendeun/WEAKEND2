@@ -80,10 +80,11 @@ def get_mel_spectrogram(path:str, sr:int=22050, n_mels:int=128, fmax:int=8000, w
 def load_ensemble():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     text_models, text_tokenizers = [], []
-    speech_modalities = []  # (model, processor or None, label_map, name)
+    speech_modalities = []
 
     for cfg in MODEL_CONFIGS:
         if cfg['type'] == 'text':
+            # ─── 텍스트 모델만 Drive에서 불러옴 ───
             model, tokenizer = load_model_and_tokenizer_from_drive(
                 file_id=cfg['file_id'],
                 model_name=cfg['model_name'],
@@ -94,18 +95,20 @@ def load_ensemble():
             text_tokenizers.append(tokenizer)
 
         else:  # speech
+            # ─── hubert 음성 모델: FeatureExtractor만 로드 ───
             if cfg['name'] == 'hubert':
                 feat_extractor = Wav2Vec2FeatureExtractor.from_pretrained(cfg['model_name'])
                 mod = Wav2Vec2ForSequenceClassification.from_pretrained(
                     cfg['model_name'], num_labels=len(cfg['label_map'])
                 )
+                # (옵션) fine-tuned weights 덮어쓰기
                 wpath = os.path.join('models', f"{cfg['name']}_emotion.pt")
                 if os.path.exists(wpath):
                     mod.load_state_dict(torch.load(wpath, map_location='cpu'), strict=False)
                 mod.to(device).eval()
                 speech_modalities.append((mod, feat_extractor, cfg['label_map'], cfg['name']))
 
-            else:  # cnn_speech
+            else:  # cnn_speech 같은 커스텀 음성 모델
                 cnn = CNNSpeech(len(cfg['label_map']))
                 wpath = os.path.join('models', f"{cfg['name']}_emotion.pt")
                 if os.path.exists(wpath):
