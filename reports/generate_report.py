@@ -99,21 +99,27 @@ def create_pdf_report(login_id: str) -> bytes:
     ]
 
     for fig in figs:
+        # 1) Plotly Figure → PNG → ImageReader
         img_bytes = fig.to_image(format="png", engine="kaleido")
         img = ImageReader(io.BytesIO(img_bytes))
 
-        max_w, max_h = width-100, height-100
-        aspect = fig.layout.height/fig.layout.width
+        # 2) 원본 이미지 크기(px)로 비율 계산
+        orig_w, orig_h = img.getSize()
+        aspect = orig_h / orig_w
+
+        # 3) A4 여백(50pt) 기준 최대 크기
+        max_w, max_h = width - 100, height - 100
+
+        # 4) 비율에 맞춰 크기 결정
         w = max_w
         h = w * aspect
         if h > max_h:
             h = max_h
             w = h / aspect
-        x = (width - w)/2
-        y = (height - h)/2
 
-        pdf.drawImage(img, x, y, width=w, height=h, mask='auto')
-        pdf.showPage()
+        # 5) 중앙 정렬 삽입 좌표
+        x = (width - w) / 2
+        y = (height - h) / 2
 
     pdf.save()
     buffer.seek(0)
