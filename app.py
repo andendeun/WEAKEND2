@@ -78,43 +78,20 @@ if "chat_history" not in st.session_state:
 def login_page():
     st.image("mainimage.png", use_container_width=True)
 
-    st.markdown("""
-    <style>
-      div.stButton > button {
-        white-space: nowrap !important;
-      }
-    </style>
-    """, unsafe_allow_html=True)
-
-
     user = st.text_input("아이디")
     passwd = st.text_input("비밀번호", type="password")
 
-    # ① 버튼만 오른쪽 열(col2)에
-    col1, col2 = st.columns([3, 1])
-    login_clicked = col2.button("로그인")
-
-    # ② 메시지는 반드시 왼쪽 열(col1)에
-    login_clicked = st.button("로그인")
-
-    if login_clicked:
+    if st.button("로그인"):
         if login(user, passwd):
             st.session_state.logged_in = True
-            st.session_state.username  = user
-            st.session_state.page      = "main"
+            st.session_state.username = user
+            st.session_state.page = "main"          # 로그인 후 메인 페이지로 이동
             st.success("로그인 성공! 메인 페이지로 이동합니다.")
         else:
             st.error("아이디 또는 비밀번호가 일치하지 않습니다.")
 
-
     st.markdown("---")
-
-    # ─── 회원가입 버튼 ───
-    col1, col2 = st.columns([3, 1])
-    with col2:
-        signup_clicked = st.button("회원가입")
-    # 회원가입 클릭 시 페이지 이동(좌측)
-    if signup_clicked:
+    if st.button("회원가입"):
         st.session_state.page = "signup"
 
 
@@ -181,51 +158,45 @@ def main_page():
     # 1️⃣ 내 감정 알아보기
     if page == "내 감정 알아보기":
         st.title("당신의 감정을 입력해 보세요")
+        audio_file = st.file_uploader("🎤 RECORD ", type=["wav","mp3"])
+        recognized_text = ""
 
-        # 메시지 전송 콜백 정의
-        def send_message():
-            msg = st.session_state.chat_input.strip()
-            if msg:
-                log_emotion(st.session_state.username, 'user', msg)
-                reply = generate_response(msg)
-                log_emotion(st.session_state.username, 'bot', reply)
-                st.session_state.chat_history.append(('user', msg))
-                st.session_state.chat_history.append(('bot', reply))
-            st.session_state.chat_input = ""
-
-                # 음성 파일 업로드 및 자동 전송
-        audio_file = st.file_uploader("🎤 RECORD", type=["wav","mp3"])
-        text = ""
         if audio_file:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
                 tmp.write(audio_file.read())
-                rec = sr.Recognizer()
+                recognizer = sr.Recognizer()
                 with sr.AudioFile(tmp.name) as src:
-                    data = rec.record(src)
+                    audio_data = recognizer.record(src)
                     try:
-                        text = rec.recognize_google(data, language="ko-KR")
-                        st.success(f"📝 변환된 텍스트: {text}")
+                        recognized_text = recognizer.recognize_google(audio_data, language="ko-KR")
+                        st.success(f"📝 변환된 텍스트: {user_input}")
                     except:
                         st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
 
-        # 텍스트 입력창: 음성 인식 후 자동 전송 콜백만 지정
-        st.text_input("📝 CHAT", key="chat_input", on_change=send_message)
-        st.button("전송", key="send_button", on_click=send_message)
+        if not user_input:
+            user_input = st.text_input("📝 CHAT")
 
-        # 대화 표시
+        if user_input:
+            log_emotion(st.session_state.username, "user", user_input)
+            bot_reply = generate_response(user_input)
+            log_emotion(st.session_state.username, "bot", bot_reply)
+            st.session_state.chat_history.append(("user", user_input))
+            st.session_state.chat_history.append(("bot", bot_reply))
+
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-        for u, b in zip(st.session_state.chat_history[::2], st.session_state.chat_history[1::2]):
-            st.markdown(f"""
+        paired = list(zip(st.session_state.chat_history[::2],
+                          st.session_state.chat_history[1::2]))
+        for u_msg, b_msg in (paired):
+            st.markdown(f'''
                 <div class="user-bubble-wrapper">
-                  <div class="user-bubble">{u[1]}</div>
+                  <div class="user-bubble">{u_msg[1]}</div>
                 </div>
                 <div class="chat-bubble">
                   <img src="https://cdn-icons-png.flaticon.com/512/8229/8229494.png" width="24" />
-                  <div class="bot-bubble">{b[1]}</div>
+                  <div class="bot-bubble">{b_msg[1]}</div>
                 </div>
-            """, unsafe_allow_html=True)
+            ''', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
-
 
     # 2️⃣ 감정 리포트
     elif page == "감정 리포트":
@@ -236,20 +207,6 @@ def main_page():
         if df.empty:
             st.warning("로그인 후 대화를 먼저 진행해 주세요.")
             return
-
-        st.markdown("""
-        <style>
-        /* BaseWeb 탭 리스트 컨테이너 */
-        div[data-baseweb="tab-list"] {
-            display: flex !important;
-        }
-        /* 각 탭 버튼을 flex 아이템으로, 동일 너비 할당 */
-        div[data-baseweb="tab-list"] button {
-            flex: 1 1 0 !important;
-            text-align: center;
-        }
-        </style>
-        """, unsafe_allow_html=True)
 
         # ② yeji.py 의 여러 렌더 함수로 탭 구성
         tab1, tab2, tab3, tab4 = st.tabs(
@@ -279,7 +236,7 @@ def main_page():
         )
 
     # 로그아웃
-    _, logout_col = st.columns([3, 1])
+    logout_col, _ = st.columns([3, 1])
     with logout_col:
         if st.button("로그아웃"):
             st.session_state.logged_in = False
