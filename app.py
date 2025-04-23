@@ -173,24 +173,23 @@ def main_page():
                     except:
                         st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
 
-        # 2) 텍스트 입력 박스
+        # 2) 텍스트 입력 + 버튼
         user_input = st.text_input("📝 CHAT", key="chat_input")
+        if st.button("전송"):
+            # 음성→텍스트 우선, 아니면 타이핑
+            input_text = recognized_text or user_input
+            if input_text:
+                # 기록 & 응답
+                log_emotion(st.session_state.username, "user", input_text)
+                bot_reply = generate_response(input_text)
+                log_emotion(st.session_state.username, "bot", bot_reply)
 
-        # 3) 실제 사용할 입력 결정
-        input_text = recognized_text or user_input
+                st.session_state.chat_history.append(("user", input_text))
+                st.session_state.chat_history.append(("bot", bot_reply))
 
-        if input_text:
-            # 기록 & 응답
-            log_emotion(st.session_state.username, "user", input_text)
-            bot_reply = generate_response(input_text)
-            log_emotion(st.session_state.username, "bot", bot_reply)
-
-            st.session_state.chat_history.append(("user", input_text))
-            st.session_state.chat_history.append(("bot", bot_reply))
-
-            # 입력란 비우기
-            st.session_state.chat_input = ""
-            
+                # 콜백 안이므로 안전하게 지울 수 있음
+                st.session_state.chat_input = ""
+                
 
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
         paired = list(zip(
