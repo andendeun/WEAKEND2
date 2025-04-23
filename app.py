@@ -23,7 +23,7 @@ st.markdown("""
         .block-container { max-width: 414px; height: 896px; overflow-y: auto;
             margin: 40px auto; background-color: white; border: 1px solid #ddd;
             border-radius: 20px; padding: 30px 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
-        body { background-color: #f1f3f6; }
+        body { background-color: white; }
         h1 { font-size:28px!important;text-align:center; }
         h3 { font-size:18px!important;text-align:center; }
         button { font-size:16px!important; }
@@ -109,7 +109,7 @@ def main_page():
         orientation="horizontal",
         styles={
             "nav-link": {"font-size": "20px", "padding": "8px 16px"},
-            "nav-link-selected": {"font-size": "20px", "padding": "8px 16px"}
+            "nav-link-selected": {"font-size": "16px", "padding": "6px 12px", "background-color": "#f2f2f2"}
         }
     )
 
@@ -145,7 +145,7 @@ def main_page():
                         st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
 
         # 입력창 및 전송 버튼
-        st.text_input("📝 CHAT", value=text, key="chat_input")
+        st.text_input("📝 CHAT", key="chat_input")
         st.button("전송", key="send_button", on_click=send_message)
 
         # 대화 표시
