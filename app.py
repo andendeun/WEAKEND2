@@ -10,7 +10,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from backend.db import get_region_list
 from backend.log_emotions import log_emotion
-from reports.emotion_trend_plot import load_data, render_dashboard, render_trend, render_calendar, render_alert
+from reports.emotion_trend_plot import (
+    load_data, render_dashboard, render_trend, render_calendar, render_alert
+)
 from streamlit_option_menu import option_menu
 import streamlit as st
 
@@ -48,15 +50,13 @@ st.markdown("""
             max-width: 75%;
             word-break: break-word;
         }
-
         .bot-bubble {
-            background-color: ##f2f2f2;  /* 짙은 회색 톤 */
+            background-color: #f2f2f2;   /* 짙은 회색 톤 */
             padding: 12px 16px;
             border-radius: 18px 18px 18px 0;
             max-width: 75%;
             word-break: break-word;
         }
-
     </style>
 """, unsafe_allow_html=True)
 
@@ -64,7 +64,7 @@ st.markdown("""
 # 1) 세션 상태 초기화
 # ─────────────────────────────────────────────────────────────────────────────
 if "page" not in st.session_state:
-    st.session_state.page = "login"    # login, signup, main
+    st.session_state.page = "login"      # login, signup, main
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
@@ -77,42 +77,40 @@ if "chat_history" not in st.session_state:
 # ─────────────────────────────────────────────────────────────────────────────
 def login_page():
     st.image("mainimage.png", use_container_width=True)
+    user = st.text_input("아이디", key="login_user")
+    passwd = st.text_input("비밀번호", type="password", key="login_passwd")
 
-    user = st.text_input("아이디")
-    passwd = st.text_input("비밀번호", type="password")
-
-    if st.button("로그인"):
+    if st.button("로그인", key="login_btn"):
         if login(user, passwd):
             st.session_state.logged_in = True
             st.session_state.username = user
-            st.session_state.page = "main"          # 로그인 후 메인 페이지로 이동
+            st.session_state.page = "main"
             st.success("로그인 성공! 메인 페이지로 이동합니다.")
         else:
             st.error("아이디 또는 비밀번호가 일치하지 않습니다.")
 
     st.markdown("---")
-    if st.button("회원가입"):
+    if st.button("회원가입", key="go_signup"):
         st.session_state.page = "signup"
 
 
 def signup_page():
     st.markdown("<h1>회원가입</h1>", unsafe_allow_html=True)
-
-    login_id = st.text_input("아이디")
-    password = st.text_input("비밀번호", type="password")
+    login_id = st.text_input("아이디", key="signup_user")
+    password = st.text_input("비밀번호", type="password", key="signup_passwd")
     birthdate = st.date_input(
-        "생년월일", min_value=date(1900, 1, 1), max_value=date.today()
+        "생년월일", min_value=date(1900, 1, 1), max_value=date.today(), key="signup_birth"
     )
 
     region_options = get_region_list()
     region_name_to_id = dict(region_options)
-    region_name = st.selectbox("거주지역", list(region_name_to_id.keys()))
+    region_name = st.selectbox("거주지역", list(region_name_to_id.keys()), key="signup_region")
     region_id = region_name_to_id.get(region_name)
 
-    phonenumber = st.text_input("핸드폰번호 (예: 010-1234-5678)")
-    gender = st.selectbox("성별", ["남성", "여성"])
+    phonenumber = st.text_input("핸드폰번호 (예: 010-1234-5678)", key="signup_phone")
+    gender = st.selectbox("성별", ["남성", "여성"], key="signup_gender")
 
-    if st.button("회원가입하기"):
+    if st.button("회원가입하기", key="signup_btn"):
         if not re.match(r"^010-\d{4}-\d{4}$", phonenumber):
             st.error("전화번호 형식이 올바르지 않습니다.")
         else:
@@ -131,14 +129,13 @@ def signup_page():
                 st.error(msg)
 
     st.markdown("---")
-    if st.button("← 로그인으로 돌아가기"):
+    if st.button("← 로그인으로 돌아가기", key="back_to_login"):
         st.session_state.page = "login"
 
 
 def main_page():
     if "active_page" not in st.session_state:
         st.session_state.active_page = "내 감정 알아보기"
-
 
     page = option_menu(
         menu_title=None,
@@ -151,44 +148,31 @@ def main_page():
             "container": {"padding":"0!important", "background-color":"#f1f3f6"},
             "nav-link": {"font-size":"16px", "padding":"0 20px"},
             "nav-link-selected": {"background-color":"#0976bc", "font-weight":"bold"},
-        }
+        },
+        key="main_menu"
     )
+    st.session_state.active_page = page
 
-
-    # 1️⃣ 내 감정 알아보기
+    # ─────────────────────────────────────────────────────────────────────────
     if page == "내 감정 알아보기":
         st.title("당신의 감정을 입력해 보세요")
-        audio_file = st.file_uploader("🎤 RECORD ", type=["wav","mp3"])
 
-        # ─── 세션 플래그 초기화 ─────────────────────────────
-        if "last_audio" not in st.session_state:
-            st.session_state.last_audio = None
-        if "audio_processed" not in st.session_state:
-            st.session_state.audio_processed = False
-
-        # ─── 새 오디오 업로드 감지 ───────────────────────────
-        cur_audio = audio_file.name if audio_file else None
-        if cur_audio != st.session_state.last_audio:
-            st.session_state.last_audio = cur_audio
-            st.session_state.audio_processed = False
-
-        # ─── 1) 음성 업로드 & 자동 처리 플래그 초기화 ─────────────────
+        # 1) 음성 업로드 & 플래그 초기화
         audio_file = st.file_uploader(
-                    "🎤 RECORD ",
-                    type=["wav","mp3"],
-                    key="audio_uploader"    # ← 중복 방지를 위한 고유 키
-                    )
+            label="🎤 RECORD ",
+            type=["wav", "mp3"],
+            key="audio_uploader"
+        )
         if "last_audio" not in st.session_state:
             st.session_state.last_audio = None
             st.session_state.audio_processed = False
 
-        # 새 업로드 감지
         cur_audio = audio_file.name if audio_file else None
         if cur_audio != st.session_state.last_audio:
             st.session_state.last_audio = cur_audio
             st.session_state.audio_processed = False
 
-        # 음성 인식
+        # 2) 음성 인식
         recognized_text = ""
         if audio_file:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
@@ -202,7 +186,7 @@ def main_page():
                     except:
                         st.warning("음성 인식 실패. 텍스트로 입력해주세요.")
 
-        # 음성 → 챗봇 자동 호출 (한번만)
+        # 3) 음성 텍스트 자동 처리 (한 번만)
         if recognized_text and not st.session_state.audio_processed:
             user_msg = recognized_text
             log_emotion(st.session_state.username, "user", user_msg)
@@ -213,10 +197,10 @@ def main_page():
             st.session_state.chat_history.append(("bot", bot_reply))
             st.session_state.audio_processed = True
 
-        # ─── 2) 채팅 폼 ─────────────────────────────────────────────
+        # 4) 수동 채팅 폼
         with st.form("chat_form", clear_on_submit=True):
-            chat_text = st.text_input("📝 CHAT", key="chat_input")
-            submitted = st.form_submit_button("전송", key="submit_btn")
+            chat_text = st.text_input("📝 CHAT", placeholder="메시지를 입력하세요", key="chat_input")
+            submitted = st.form_submit_button("전송", use_container_width=True, key="send_btn")
 
         if submitted and chat_text:
             log_emotion(st.session_state.username, "user", chat_text)
@@ -226,73 +210,63 @@ def main_page():
             st.session_state.chat_history.append(("user", chat_text))
             st.session_state.chat_history.append(("bot", bot_reply))
 
-        # ─── 3) 대화 내역 렌더링 ─────────────────────────────────────
+        # 5) 대화 내용 렌더링
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
         paired = list(zip(st.session_state.chat_history[::2],
-                        st.session_state.chat_history[1::2]))
+                          st.session_state.chat_history[1::2]))
         for u_msg, b_msg in reversed(paired):
             st.markdown(f'''
                 <div class="user-bubble-wrapper">
-                <div class="user-bubble">{u_msg[1]}</div>
+                  <div class="user-bubble">{u_msg[1]}</div>
                 </div>
                 <div class="chat-bubble">
-                <img src="https://cdn-icons-png.flaticon.com/512/8229/8229494.png" width="24" />
-                <div class="bot-bubble">{b_msg[1]}</div>
+                  <img src="https://cdn-icons-png.flaticon.com/512/8229/8229494.png" width="24" />
+                  <div class="bot-bubble">{b_msg[1]}</div>
                 </div>
             ''', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-
-
-
-
-    # 2️⃣ 감정 리포트
+    # ─────────────────────────────────────────────────────────────────────────
     elif page == "감정 리포트":
         st.title("감정 리포트")
 
-        # ① 데이터 로드
         df = load_data(st.session_state.username)
         if df.empty:
             st.warning("로그인 후 대화를 먼저 진행해 주세요.")
             return
 
-        # ② yeji.py 의 여러 렌더 함수로 탭 구성
         tab1, tab2, tab3, tab4 = st.tabs(
-            ["대시보드", "감정 트렌드", "감정 달력", "맞춤 알림"]
+            ["대시보드", "감정 트렌드", "감정 달력", "맞춤 알림"],
+            key="report_tabs"
         )
-
         with tab1:
             render_dashboard(df)
-
         with tab2:
             render_trend(df)
-
         with tab3:
             render_calendar(df)
-
         with tab4:
             render_alert(df)
 
-        # ③ (선택) PDF 다운로드 버튼
-        #    yeji.py 에 PDF 생성 로직이 없다면, 기존 create_pdf_report 유지
         pdf_bytes = create_pdf_report(st.session_state.username)
         st.download_button(
-            "📥 PDF Downlaod",
+            "📥 PDF Download",
             data=pdf_bytes,
             file_name=f"{st.session_state.username}_감정리포트_{date.today()}.pdf",
             mime="application/pdf",
+            key="download_pdf"
         )
 
     # 로그아웃
     logout_col, _ = st.columns([3, 1])
     with logout_col:
-        if st.button("로그아웃"):
+        if st.button("로그아웃", key="logout_btn"):
             st.session_state.logged_in = False
             st.session_state.page = "login"
             st.session_state.chat_history = []
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 3) 라우팅: 로그인 상태/페이지 분기
+# 3) 라우팅
 # ─────────────────────────────────────────────────────────────────────────────
 if st.session_state.page == "login":
     login_page()
