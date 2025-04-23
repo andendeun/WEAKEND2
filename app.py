@@ -173,7 +173,11 @@ def main_page():
             st.session_state.audio_processed = False
 
         # ─── 1) 음성 업로드 & 자동 처리 플래그 초기화 ─────────────────
-        audio_file = st.file_uploader("🎤 RECORD ", type=["wav","mp3"])
+        audio_file = st.file_uploader(
+                    "🎤 RECORD ",
+                    type=["wav","mp3"],
+                    key="audio_uploader"    # ← 중복 방지를 위한 고유 키
+                    )
         if "last_audio" not in st.session_state:
             st.session_state.last_audio = None
             st.session_state.audio_processed = False
@@ -211,8 +215,8 @@ def main_page():
 
         # ─── 2) 채팅 폼 ─────────────────────────────────────────────
         with st.form("chat_form", clear_on_submit=True):
-            chat_text = st.text_input("📝 CHAT", placeholder="메시지를 입력하세요")
-            submitted = st.form_submit_button("전송")
+            chat_text = st.text_input("📝 CHAT", key="chat_input")
+            submitted = st.form_submit_button("전송", key="submit_btn")
 
         if submitted and chat_text:
             log_emotion(st.session_state.username, "user", chat_text)
